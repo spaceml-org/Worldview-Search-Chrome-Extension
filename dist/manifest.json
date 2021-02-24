@@ -1,0 +1,24 @@
+{
+    "name": "WorldView Search",
+    "description": "WorldView Search Extension",
+    "version": "0.1.0",
+    "manifest_version": 2,
+    "icons": {
+        "16": "./icon-16x16.png",
+        "32": "./icon-32x32.png",
+        "192": "./icon-192x192.png"
+    },
+    "background": {
+        "scripts": ["./background.js"]
+    },
+    "options_page": "./options.html",
+    "browser_action": {
+        "default_popup": "popup.html"
+    },
+    "permissions": [
+        "tabs",
+        "<all_urls>",
+        "https://worldview.earthdata.nasa.gov/",
+        "https://fdl-us-knowledge.ue.r.appspot.com/similarimages/"
+    ] 
+}

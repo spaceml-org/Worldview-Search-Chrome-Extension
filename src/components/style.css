@@ -1,0 +1,333 @@
+/* ==========================================================================
+   Base styles: opinionated defaults
+   ========================================================================== */
+@import url("https://use.typekit.net/hkv0eoj.css");
+html {
+  /* color: #222; */
+  font-size: 1em;
+  line-height: 1.4;
+  /* background-color:white; */
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* This makes the popup hide scrollbars */
+#popupbody {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: white;
+}
+
+/*
+ * Remove the gap between audio, canvas, iframes,
+ * images, videos and the bottom of their containers:
+ * https://github.com/h5bp/html5-boilerplate/issues/440
+ */
+
+audio,
+canvas,
+iframe,
+img,
+svg,
+video {
+  vertical-align: middle;
+}
+
+/*
+ * Clearfix: contain floats
+ *
+ * For modern browsers
+ * 1. The space content is one way to avoid an Opera bug when the
+ *    `contenteditable` attribute is included anywhere else in the document.
+ *    Otherwise it causes space to appear at the top and bottom of elements
+ *    that receive the `clearfix` class.
+ * 2. The use of `table` rather than `block` is only necessary if using
+ *    `:before` to contain the top-margins of child elements.
+ */
+
+.clearfix::before,
+.clearfix::after {
+  content: " ";
+  display: table;
+}
+
+.clearfix::after {
+  clear: both;
+}
+
+#foreground {
+  position: absolute;
+  top: 0;
+}
+
+#popup {
+  width: 790px;
+  height: 590px;
+  overflow: hidden;
+  margin: 0;
+  padding: 5px;
+}
+
+#popup-cover {
+  /* display:none; */
+  background-color: white;
+  width: 600px;
+  /* height:50px; */
+  position: absolute;
+  top: 3em;
+  left: 3em;
+  border-radius: 5px;
+}
+
+#searchprompt {
+  position: absolute;
+  top: 0px;
+}
+
+.search-container {
+  padding: 1em 1em 2em 1em;
+}
+
+
+
+.found-container {
+  padding: 1em;
+}
+
+@keyframes glowing {
+  0% {
+    box-shadow: 0 0 -10px #50b793;
+  }
+  40% {
+    box-shadow: 0 0 20px #50b793;
+  }
+  60% {
+    box-shadow: 0 0 20px #50b793;
+  }
+  100% {
+    box-shadow: 0 0 -10px #50b793;
+  }
+}
+
+#searchpromptbutton {
+  background-color: #f08b02;
+  background-image: linear-gradient(270deg, #41539e, #30a0a3);
+  font-family: urw-din;
+  text-transform: uppercase;
+  padding: 15px 25px 15px 25px;
+  border-radius: 205px;
+  font-size: 1em;
+  color: white;
+  font-weight: 100;
+  letter-spacing: 1px;
+
+  margin-top: 6em;
+  border: none;
+
+  animation: glowing 2000ms infinite;
+}
+
+#results {
+  box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
+}
+#popup-cover h2 {
+  text-transform: uppercase;
+  letter-spacing: -0.8px;
+  font-family: urw-din;
+  font-size: 0.9em;
+  font-weight: 500;
+  margin-bottom: 2px;
+  margin-left: 1px;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.container {
+  border: 1px solid black;
+}
+
+.loader {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 70%;
+}
+
+.card {
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.34);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  height: 100%;
+  border-radius: 2px;
+  width: 190px !important;
+  display: table-cell;
+}
+
+.card h3 {
+  margin: 7px 0 0 12px;
+  font-size: 1em;
+  font-family: merriweather;
+  font-weight: 100;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.card:hover {
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+}
+
+.card img {
+  width: 190px;
+  height: 190px;
+}
+
+.droppable {
+  margin: 0px;
+  display: flex;
+  flex-direction: row;
+  overflow: auto;
+  height: 250px;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.16),
+    inset 0 3px 6px rgba(0, 0, 0, 0.23);
+}
+
+.droppablecont::-webkit-scrollbar-track {
+  /* -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); */
+  background-color: white;
+}
+
+.droppablecont::-webkit-scrollbar {
+  width: 6px;
+  height: 8px;
+  background-color: white;
+}
+
+.droppablecont::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
+
+.found-container {
+  margin-top: 1em;
+}
+.draghandle {
+  background-color: orange;
+}
+
+h2 {
+  font-size: 16px;
+  margin: 0px;
+}
+
+.topbar img {
+  position: absolute;
+  left: 7px;
+  right: 6px;
+  height: 25px;
+}
+.topbar {
+  width: 100%;
+  height: 25px;
+  margin: 5px 0 5px 2px;
+}
+
+.refinebar {
+  width: 100%;
+}
+
+#refinebutton {
+  position: absolute;
+  margin: 0 auto;
+  left: 38%;
+  /* top: 50%; */
+  transform: translate(-50%, -30%);
+  background-color: #f08b02;
+ 
+  font-family: urw-din;
+  text-transform: uppercase;
+  padding: 15px 25px 15px 25px;
+  border-radius: 205px;
+  font-size: 1em;
+  color: white;
+  font-weight: 100;
+  letter-spacing: 1px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
+}
+.hiderefine{
+  color:rgba(255,255,255,0.8);
+  background-image: linear-gradient(270deg, grey, grey) !important;
+}
+
+.showrefine{
+  background-image: linear-gradient(270deg, #f08b02, #30a0a3);
+}
+#downloadbutton {
+  position: absolute;
+  margin: 0 auto;
+  left: 68%;
+
+  transform: translate(-50%, -30%);
+
+  background-image: linear-gradient(270deg, #f08b02, #41539e);
+  font-family: urw-din;
+  text-transform: uppercase;
+  padding: 15px 25px 15px 25px;
+  border-radius: 205px;
+  font-size: 1em;
+  color: white;
+  font-weight: 100;
+  letter-spacing: 0;
+  width: 25%;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
+}
+
+.cardButtonbar {
+  width: 55%;
+  /* background-color:pink; */
+  float: left;
+  height: 16%;
+  margin-left: 3px;
+}
+
+.cardDetails {
+  width: 45%;
+  float: left;
+}
+
+.button {
+  background-color: black;
+  font-size: 0.7em;
+  color: white;
+  float: left;
+  margin: 5px 2px 5px 2px;
+  padding: 5px;
+  font-family: urw-din;
+  text-transform: uppercase;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.keepButton {
+  background-color: #f28c75;
+  color: black;
+}
+
+.dialogImage {
+  height: 545px;
+  width: 545px;
+}
+
+#closebutton{
+  margin-right: 1em;
+  float: right;
+  background-color: black;
+  padding: 5px;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+
+}
