@@ -26,7 +26,7 @@ const dialogStyle = {
   left: 0,
   marginLeft: 10,
   marginTop: 10,
-  width:"inherit"
+  width: "inherit",
 };
 
 /**
@@ -46,8 +46,6 @@ const move = (source, destination, droppableSource, droppableDestination) => {
   return result;
 };
 
-
-
 /**
  * Style for the search box
  */
@@ -60,7 +58,6 @@ const getSearchListStyle = (isDraggingOver) => ({
   borderCollapse: "separate",
   borderSpacing: 5,
 });
-
 
 /**
  * Style for the found box
@@ -81,8 +78,9 @@ class Foreground extends React.Component {
     this.state = {
       show: false,
       showres: false,
-      showsearchsettings:false,
-      showrefine:false,
+      showbuttons:false,
+      showsearchsettings: false,
+      showrefine: false,
       launch: true,
       searchitems: [],
       founditems: [],
@@ -90,8 +88,8 @@ class Foreground extends React.Component {
       clickeditem: [],
       screenshot: "",
       firstrun: false,
-      loaded:false,
-      searchurl:"https://fdl-us-knowledge.ue.r.appspot.com/similarimages/"
+      loaded: false,
+      searchurl: "https://fdl-us-knowledge.ue.r.appspot.com/similarimages/",
     };
 
     this.cardClick = this.cardClick.bind(this);
@@ -101,6 +99,8 @@ class Foreground extends React.Component {
     this.showSearchSettings = this.showSearchSettings.bind(this);
     this.fetchFound = this.fetchFound.bind(this);
     this.close = this.close.bind(this);
+    this.settingsChange = this.settingsChange.bind(this);
+    this.settingsSubmit = this.settingsSubmit.bind(this);
   }
 
   /**
@@ -164,10 +164,10 @@ class Foreground extends React.Component {
       });
     }
 
-    if(this.state.searchitems.length > 2){
+    if (this.state.searchitems.length > 2) {
       console.log("more than 2 in search");
       this.setState({
-        showrefine:true
+        showrefine: true,
       });
     }
   };
@@ -182,6 +182,7 @@ class Foreground extends React.Component {
       self.setState(
         {
           show: true,
+          showbuttons:true
         },
         () => {
           console.log(this.state);
@@ -196,6 +197,7 @@ class Foreground extends React.Component {
   showSearchBox() {
     this.setState({
       showres: true,
+      showbuttons:false
     });
     this.getSearchCoordinates();
   }
@@ -206,6 +208,7 @@ class Foreground extends React.Component {
   showSearchSettings() {
     this.setState({
       showsearchsettings: true,
+      showbuttons:false
     });
     // this.getSearchCoordinates();
   }
@@ -248,7 +251,6 @@ class Foreground extends React.Component {
     this.fetchFound(searchdata);
   }
 
-
   /**
    * Call the API
    */
@@ -280,20 +282,15 @@ class Foreground extends React.Component {
         console.log(res);
         var found = [];
         res.data.forEach((data, index) => {
-        
-          
-           var stringed = JSON.stringify(data);
-          
-           var ts = stringed.search('"ts');
-          
-           var firsthalf = stringed.substring(0,ts-3);
+          var stringed = JSON.stringify(data);
+
+          var ts = stringed.search('"ts');
+
+          var firsthalf = stringed.substring(0, ts - 3);
           firsthalf = firsthalf + '}"';
-         
-           var json = JSON.parse(firsthalf);
-           var compiled = JSON.parse(json);
-     
-   
- 
+
+          var json = JSON.parse(firsthalf);
+          var compiled = JSON.parse(json);
 
           found.push({
             image: compiled.urldisplayimage,
@@ -303,7 +300,7 @@ class Foreground extends React.Component {
         });
         this.setState({
           founditems: found,
-          loaded:true
+          loaded: true,
         });
       })
       .catch((err) => {
@@ -311,11 +308,11 @@ class Foreground extends React.Component {
       });
   }
 
-  close(){
+  close() {
     this.setState({
       showres: false,
-      founditems:[],
-      searchitems:[]
+      founditems: [],
+      searchitems: [],
     });
   }
 
@@ -327,6 +324,16 @@ class Foreground extends React.Component {
     }
   }
 
+  settingsChange(event){
+    this.setState({searchurl: event.target.value});
+
+  }
+
+  settingsSubmit(event){
+    alert('Search url changed to: ' + this.state.searchurl);
+    event.preventDefault();
+  }
+
   render() {
     return (
       <div
@@ -335,7 +342,7 @@ class Foreground extends React.Component {
       >
         <div
           id="searchprompt"
-          style={{ display: this.state.showres ? "none" : "block" }}
+          style={{ display: this.state.showbuttons ? "block" : "none" }}
         >
           <button id="searchpromptbutton" onClick={this.showSearchBox}>
             Search For Similar
@@ -345,9 +352,22 @@ class Foreground extends React.Component {
             search settings
           </button>
         </div>
-        <div id="settings" style ={{ display: this.state.showsearchsettings ? "block" : "none"}}>
-          <p>settings!</p>
-
+        <div
+          id="settings"
+          style={{ display: this.state.showsearchsettings ? "block" : "none" }}
+        >
+          <h2>Search Settings</h2>
+          <form onSubmit={this.settingsSubmit}>
+            <label>API URL:
+              <input type="text" 
+              name="searchurl" 
+              value={this.state.searchurl} 
+              onChange={this.settingsChange}
+              />
+            </label>
+            <br />
+            <input type="submit" value="Submit" />
+          </form>
         </div>
         <div
           id="results"
@@ -355,7 +375,9 @@ class Foreground extends React.Component {
         >
           <div className="topbar">
             <img src={logo} />
-            <div id="closebutton" onClick={this.close}>close</div>
+            <div id="closebutton" onClick={this.close}>
+              close
+            </div>
           </div>
           <DragDropContext onDragEnd={this.onDragEnd}>
             <div className="search-container">
@@ -389,7 +411,16 @@ class Foreground extends React.Component {
               </div>
             </div>
             <div className="refinebar">
-              <div id="refinebutton" className={ (this.state.searchitems.length > 1 ? 'showrefine' : 'hiderefine')}>refine search</div>
+              <div
+                id="refinebutton"
+                className={
+                  this.state.searchitems.length > 1
+                    ? "showrefine"
+                    : "hiderefine"
+                }
+              >
+                refine search
+              </div>
               <div id="downloadbutton">download all</div>
             </div>
             <div className="found-container">
@@ -413,19 +444,18 @@ class Foreground extends React.Component {
                         />
                       ))}
                       {provided.placeholder}
-                      {this.state.loaded ? null : <div className="loader">
-                      <Ring color="#F08B02" />
-                      <p>Searching...</p>
-                      </div>}
-                      
-                      
+                      {this.state.loaded ? null : (
+                        <div className="loader">
+                          <Ring color="#F08B02" />
+                          <p>Searching...</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </Droppable>
               </div>
             </div>
           </DragDropContext>
-        
         </div>
 
         <SkyLight
