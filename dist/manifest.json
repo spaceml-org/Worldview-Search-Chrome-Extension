@@ -17,7 +17,6 @@
     },
     "permissions": [
         "tabs",
-        "<all_urls>",
         "https://worldview.earthdata.nasa.gov/",
         "https://fdl-us-knowledge.ue.r.appspot.com/similarimages/"
     ] 

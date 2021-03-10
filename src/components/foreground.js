@@ -81,6 +81,7 @@ class Foreground extends React.Component {
     this.state = {
       show: false,
       showres: false,
+      showsearchsettings:false,
       showrefine:false,
       launch: true,
       searchitems: [],
@@ -89,13 +90,15 @@ class Foreground extends React.Component {
       clickeditem: [],
       screenshot: "",
       firstrun: false,
-      loaded:false
+      loaded:false,
+      searchurl:"https://fdl-us-knowledge.ue.r.appspot.com/similarimages/"
     };
 
     this.cardClick = this.cardClick.bind(this);
     this.assignWvbutton = this.assignWvbutton.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.showSearchBox = this.showSearchBox.bind(this);
+    this.showSearchSettings = this.showSearchSettings.bind(this);
     this.fetchFound = this.fetchFound.bind(this);
     this.close = this.close.bind(this);
   }
@@ -198,6 +201,16 @@ class Foreground extends React.Component {
   }
 
   /**
+   * Show the search settings
+   */
+  showSearchSettings() {
+    this.setState({
+      showsearchsettings: true,
+    });
+    // this.getSearchCoordinates();
+  }
+
+  /**
    * Get the right coordinates
    */
   getSearchCoordinates() {
@@ -256,12 +269,12 @@ class Foreground extends React.Component {
       },
     ];
 
-    var searchurl = "https://fdl-us-knowledge.ue.r.appspot.com/similarimages/";
+    // var searchurl = "https://fdl-us-knowledge.ue.r.appspot.com/similarimages/";
 
     console.log("Posting to API:");
     console.log(search[0]);
     axios
-      .post(searchurl, qs.stringify(search[0]), { headers: headers })
+      .post(this.state.searchurl, qs.stringify(search[0]), { headers: headers })
       .then((res) => {
         console.log("API returns:");
         console.log(res);
@@ -327,6 +340,14 @@ class Foreground extends React.Component {
           <button id="searchpromptbutton" onClick={this.showSearchBox}>
             Search For Similar
           </button>
+
+          <button id="searchsettingsbutton" onClick={this.showSearchSettings}>
+            search settings
+          </button>
+        </div>
+        <div id="settings" style ={{ display: this.state.showsearchsettings ? "block" : "none"}}>
+          <p>settings!</p>
+
         </div>
         <div
           id="results"
