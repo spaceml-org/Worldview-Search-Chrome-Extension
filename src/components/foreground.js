@@ -330,7 +330,12 @@ class Foreground extends React.Component {
   }
 
   settingsSubmit(event){
-    alert('Search url changed to: ' + this.state.searchurl);
+    
+    this.setState({
+      showres: false,
+      showbuttons: true,
+      showsearchsettings: false,
+    });
     event.preventDefault();
   }
 
