@@ -15,3 +15,7 @@ Most of the code lives in `components/foreground.js`.
 4. Click **"load unpacked"** button on left side
 5. Point to the (unzipped) folder
 6. **Go to the [WorldView website](https://worldview.earthdata.nasa.gov/), hit the snapshot button.**
+
+-------------
+![Demo image of WorldView Similarity Search](assets/world_view_snap.png?raw=true "WorldView Similarity Search")
+------------
