@@ -76,13 +76,25 @@ video {
 
 #popup-cover {
   /* display:none; */
-  background-color: white;
-  width: 600px;
+  background-color: #212121;
+  width: 720px;
   /* height:50px; */
   position: absolute;
-  top: 3em;
-  left: 1em;
+  top: 2em;
+  left: 4em;
   border-radius: 5px;
+  border: solid 1px rgba(255,255,255,1);
+
+  background-image: radial-gradient(rgba(255,255,255,0.2) 10%, transparent 0%), radial-gradient( rgba(255,255,255,0.2) 10%, transparent 0%); 
+  background-color: #212121;
+  background-position: 0 0, 5px 5px;
+  background-size: 10px 10px;
+
+
+}
+
+#popup-cover svg{
+  margin-top:-4px;
 }
 
 #searchprompt {
@@ -91,44 +103,44 @@ video {
 }
 
 .search-container {
-  padding: 1em 1em 2em 1em;
+  padding: 2em 2em 2em 2em;
 }
 
 
 
 .found-container {
-  padding: 1em;
+  padding: 2em 2em 3em 2em;
 }
 
 @keyframes glowing {
   0% {
-    box-shadow: 0 0 -10px #08457a;
+    box-shadow: 0 0 -10px white;
   }
   40% {
-    box-shadow: 0 0 20px #08457a;
+    box-shadow: 0 0 20px white;
   }
   60% {
-    box-shadow: 0 0 20px #08457a;
+    box-shadow: 0 0 20px white;
   }
   100% {
-    box-shadow: 0 0 -10px #08457a;
+    box-shadow: 0 0 -10px white;
   }
 }
 
 #searchpromptbutton {
-  background-color: #f08b02;
-  background-image: linear-gradient(270deg, #08457a, #333333);
+  background-color: black;
+  /* background-image: linear-gradient(270deg, #08457a, #333333); */
   font-family: urw-din;
   text-transform: uppercase;
   padding: 15px 25px 15px 25px;
-  border-radius: 6px;
+  /* border-radius: 6px; */
   font-size: 1em;
   color: white;
   font-weight: 700;
   letter-spacing: 2px;
 
   margin-top: 6em;
-  border: none;
+  border: 2px solid white;
 
   animation: glowing 2000ms infinite;
   margin-right:2em;
@@ -165,13 +177,18 @@ video {
 
 #popup-cover h2 {
   text-transform: uppercase;
-  letter-spacing: -0.8px;
+  letter-spacing: 0px;
   font-family: urw-din;
   font-size: 0.9em;
   font-weight: 500;
-  margin-bottom: 2px;
-  margin-left: 1px;
+  margin-bottom: 0px;
+  padding-bottom: 7px;
+  padding-left: 7px;
+  padding-top: 5px;
+  margin-left: 0px;
   color: rgba(0, 0, 0, 0.8);
+  background-color: white;
+  border: 1px solid white;
 }
 
 .container {
@@ -179,23 +196,35 @@ video {
 }
 
 .loader {
+  color:white;
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   top: 70%;
+  text-align: center;
 }
 
-.card {
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.34);
+.loader p{
+  font-family: urw-din;
+    font-size: 1.2em;
+    font-weight: 700;
+    line-height: 1.2em;
+    letter-spacing: 1px;
+}
+
+.card_1 {
+   /* background-color: white; */
+  box-shadow: 0 0px 8px rgb(255 255 255 / 10%), 0 0px 7px rgb(255 255 255 / 42%);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   height: 100%;
-  border-radius: 2px;
-  width: 190px !important;
+  /* border-radius: 2px; */
+  width: 230px !important;
   display: table-cell;
+  border:1px solid white !important;
+  position: relative;
 }
 
-.card h3 {
+.card_1 h3 {
   margin: 7px 0 0 12px;
   font-size: 1em;
   font-family: merriweather;
@@ -203,13 +232,13 @@ video {
   color: rgba(0, 0, 0, 0.8);
 }
 
-.card:hover {
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+.card_1:hover {
+  box-shadow: 0 0px 10px rgb(255 255 255 / 50%), 0 0px 10px rgb(255 255 255 / 50%);
 }
 
-.card img {
-  width: 190px;
-  height: 190px;
+.card_1 img {
+  width: 230px;
+  height: 230px;
 }
 
 .droppable {
@@ -217,29 +246,44 @@ video {
   display: flex;
   flex-direction: row;
   overflow: auto;
-  height: 250px;
+  height: 270px;
   box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.16),
     inset 0 3px 6px rgba(0, 0, 0, 0.23);
+  border: 1px solid white;
 }
+.droppablecont{
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    overflow-x: scroll;
+    overflow-y: hidden;
+    border-collapse: separate;
+    border-spacing: 20px;
+    padding: 0px;
+    width: 100%;
+    /* background-image: radial-gradient(rgba(255,255,255,0.2) 10%, transparent 0%), radial-gradient( rgba(255,255,255,0.2) 10%, transparent 0%); */
+    background-color: black;
+    /* background-position: 0 0, 5px 5px;
+    background-size: 10px 10px; */
 
+
+}
 .droppablecont::-webkit-scrollbar-track {
   /* -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); */
-  background-color: white;
+  background-color:black;
 }
 
 .droppablecont::-webkit-scrollbar {
   width: 6px;
   height: 8px;
-  background-color: white;
+  background-color:black;
 }
 
 .droppablecont::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.788);
+  border-radius: 1px;
 }
 
 .found-container {
-  margin-top: 1em;
+  margin-top: 3em;
 }
 .draghandle {
   background-color: orange;
@@ -250,6 +294,8 @@ h2 {
   margin: 0px;
 }
 
+
+
 .topbar img {
   position: absolute;
   left: 7px;
@@ -257,9 +303,26 @@ h2 {
   height: 25px;
 }
 .topbar {
-  width: 100%;
+  /* width: 100%;
   height: 25px;
-  margin: 5px 0 5px 2px;
+  margin: 5px 0 5px 2px; */
+
+  background-color: black;
+  width: 100%;
+  height: 3em;
+  margin: 0 0 0 0;
+  border-radius: 5px 5px 0 0;
+  border-bottom: solid 1px rgba(255,255,255,1);
+  padding-top: 1em;
+  padding-left: 1em;
+
+  color:white;
+
+}
+
+.topbar p{
+  font-family: urw-din;
+  letter-spacing:1px;
 }
 
 .refinebar {
@@ -269,28 +332,115 @@ h2 {
 #refinebutton {
   position: absolute;
   margin: 0 auto;
-  left: 38%;
-  /* top: 50%; */
+  left: 50%;
+  top: 49.5%;
   transform: translate(-50%, -30%);
-  background-color: #f08b02;
- 
+  background-color: black;
   font-family: urw-din;
   text-transform: uppercase;
-  padding: 15px 25px 15px 25px;
-  border-radius: 205px;
-  font-size: 1em;
+  padding: 20px 30px 20px 22px;
+  /* border-radius: 205px; */
+  font-size: 1.5em;
   color: white;
   font-weight: 100;
-  letter-spacing: 1px;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
+  letter-spacing: 2px;
+  border: solid white 1px;
+
+  /* -webkit-box-shadow: 20px 20px 0px 5px rgba(0,0,0,0.8);  */
+box-shadow:9px 9px 0px 2px rgb(0 0 0 / 100%), 8px 8px 0px 2px rgb(0 0 0 / 100%),7px 7px 0px 2px rgb(0 0 0 / 100%),6px 6px 0px 2px rgb(0 0 0 / 100%),5px 5px 0px 2px rgb(0 0 0 / 100%),4px 4px 0px 2px rgb(0 0 0 / 100%),3px 3px 0px 2px rgb(0 0 0 / 100%),2px 2px 0px 2px rgb(0 0 0 / 100%),1px 1px 0px 2px rgb(0 0 0 / 100%);
+transition: all 0.5s ease;
 }
+#refinebutton:hover{
+  cursor: pointer;
+  box-shadow:
+  0 1px 3px rgb(255 255 255 / 12%), 0 1px 2px rgb(255 255 255 / 24%),
+  9px 9px 0px 2px rgb(255 255 255 / 100%), 
+  8px 8px 0px 2px rgb(255 255 255 / 100%),
+  7px 7px 0px 2px rgb(255 255 255 / 100%),
+  6px 6px 0px 2px rgb(255 255 255 / 100%),
+  5px 5px 0px 2px rgb(255 255 255 / 100%),
+  4px 4px 0px 2px rgb(255 255 255 / 100%),
+  3px 3px 0px 2px rgb(255 255 255 / 100%),
+  2px 2px 0px 2px rgb(255 255 255 / 100%),
+  1px 1px 0px 2px rgb(255 255 255 / 100%) ;
+
+}
+
+#refinebutton:active{
+  background-color:white;
+  color:black;
+  cursor: pointer;
+  box-shadow:
+  0 1px 3px rgb(255 255 255 / 12%), 0 1px 2px rgb(255 255 255 / 24%),
+  5px 5px 0px 2px rgb(255 255 255 / 100%),
+  4px 4px 0px 2px rgb(255 255 255 / 100%),
+  3px 3px 0px 2px rgb(255 255 255 / 100%),
+  2px 2px 0px 2px rgb(255 255 255 / 100%),
+  1px 1px 0px 2px rgb(255 255 255 / 100%) ;
+
+}
+
+.activebutton{
+  background-color:white !important;
+  color:black !important;
+  cursor: pointer;
+  box-shadow:
+  0 1px 3px rgb(255 255 255 / 12%), 0 1px 2px rgb(0 0 0 / 24%),
+  5px 5px 0px 2px rgb(0 0 0 / 100%),
+  4px 4px 0px 2px rgb(0 0 0 / 100%),
+  3px 3px 0px 2px rgb(0 0 0 / 100%),
+  2px 2px 0px 2px rgb(0 0 0 / 100%),
+  1px 1px 0px 2px rgb(0 0 0 / 100%) !important;
+}
+
+
+#refinebutton svg{
+  font-size: 1.3em;
+  margin-top: -4px;
+  margin-right: -3px;
+}
+
+#refineprompt{
+  background-color: white;
+  position: absolute;
+  left: -2em;
+  width: 20em;
+  color: black;
+  box-shadow: 0 10px 20px rgb(255 255 255 / 19%), 0 6px 6px rgb(255 255 255 / 23%);
+  border: 2px solid black;
+  padding: 10px;
+  top: 48%;
+
+}
+
+#refineprompt p{
+  font-size: 0.9em;
+}
+
+.skylight-dialog{
+  background-color: black !important;
+    color: white;
+    /* margin: 0 0 0em 0; */
+    top: 25% !important;
+    padding: 33px !important;
+    border: 1px solid white;
+    width: 650px !important;
+    box-shadow: 0 0px 8px rgb(255 255 255 / 10%), 0 0px 7px rgb(255 255 255 / 42%) !important;
+
+
+}
+
+.skylight-dialog p{
+ padding:1em;
+}
+
 .hiderefine{
-  color:rgba(255,255,255,0.8);
-  background-image: linear-gradient(270deg, grey, grey) !important;
+  /* color:rgba(255,255,255,0.8);
+  background-image: linear-gradient(270deg, grey, grey) !important; */
 }
 
 .showrefine{
-  background-image: linear-gradient(270deg, #f08b02, #30a0a3);
+  /* background-image: linear-gradient(270deg, #f08b02, #30a0a3); */
 }
 #downloadbutton {
   position: absolute;
@@ -313,11 +463,13 @@ h2 {
 }
 
 .cardButtonbar {
-  width: 55%;
+  position: absolute;
+  width: 100%;
   /* background-color:pink; */
   float: left;
   height: 16%;
   margin-left: 3px;
+  margin-top:-35px;
 }
 
 .cardDetails {
@@ -336,7 +488,10 @@ h2 {
   text-transform: uppercase;
   border-radius: 2px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  cursor:pointer;
 }
+
+
 
 .keepButton {
   background-color: #f28c75;
@@ -349,12 +504,45 @@ h2 {
 }
 
 #closebutton{
-  margin-right: 1em;
+  margin-right: 1.5em;
   float: right;
   background-color: black;
   padding: 5px;
   color: white;
+  margin-top: -20px;
   border-radius: 5px;
   cursor: pointer;
 
+}
+
+.fade-in-image {
+  animation: fadeIn 1s;
+  -webkit-animation: fadeIn 1s;
+  -moz-animation: fadeIn 1s;
+  -o-animation: fadeIn 1s;
+  -ms-animation: fadeIn 1s;
+}
+@keyframes fadeIn {
+  0% {opacity:0;}
+  100% {opacity:1;}
+}
+
+@-moz-keyframes fadeIn {
+  0% {opacity:0;}
+  100% {opacity:1;}
+}
+
+@-webkit-keyframes fadeIn {
+  0% {opacity:0;}
+  100% {opacity:1;}
+}
+
+@-o-keyframes fadeIn {
+  0% {opacity:0;}
+  100% {opacity:1;}
+}
+
+@-ms-keyframes fadeIn {
+  0% {opacity:0;}
+  100% {opacity:1;}
 }

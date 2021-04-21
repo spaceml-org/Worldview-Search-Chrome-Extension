@@ -33,13 +33,16 @@
     "axios": "^0.21.1",
     "qs": "^6.7.0",
     "react": "^16.12.0",
+    "react-awesome-reveal": "^3.7.1",
     "react-beautiful-dnd": "^13.0.0",
     "react-dom": "^16.12.0",
+    "react-icons": "^4.2.0",
     "react-image": "^4.0.3",
     "react-router-dom": "^5.2.0",
     "react-skylight": "^0.5.1",
     "react-spinkit": "^3.0.0",
     "react-spinners-css": "^1.2.2",
+    "react-text-loop": "^2.3.0",
     "whatwg-fetch": "^3.5.0"
   }
 }

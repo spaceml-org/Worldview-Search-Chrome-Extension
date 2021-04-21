@@ -3,6 +3,9 @@ import SkyLight from "react-skylight";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import "./style.css";
 
+import {  MdGrade, MdDelete } from 'react-icons/md';
+import { Fade } from "react-awesome-reveal";
+
 import Img from 'react-image';
 
 const getItemStyle = (isDragging, draggableStyle) => ({
@@ -17,10 +20,8 @@ class Card extends React.Component {
 
   moveinfo(){
     var item = {
-      droppableId:this.props.droppable,
       source: {
-        index:this.props.index,
-        droppableId:this.props.droppable
+        index:this.props.indexprop,
       }
     }
     return(item)
@@ -31,9 +32,10 @@ class Card extends React.Component {
       return(
         <Draggable key={this.props.keyprop} draggableId={this.props.idprop} index={this.props.indexprop}>
         {(provided, snapshot) => (
+          
           <div
             
-            className="card"
+            className="card_1 fade-in-image"
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
@@ -44,13 +46,19 @@ class Card extends React.Component {
           >
         
             <img onClick={() => this.props.clickFunction(this.props.itemprop)} src={this.props.image}></img>
-            <div className="cardDetails">
+            {/* <div className="cardDetails">
         
-            </div>
+            </div> */}
             
             <div className="cardButtonbar">
-              <div className="keepButton button" onClick={()  => this.props.movetosearchfunction(this.moveinfo())}>keep</div>
-              <div className="discardButton button">discard</div>
+              {this.props.hasmovetosearch 
+              ? ( <div className="keepButton button" onClick={()  => this.props.movetosearchfunction(this.moveinfo())}><MdGrade /> Move to input</div>)
+              : (
+                <div className="keepButton button" ><MdGrade /></div>
+              )
+              }
+             
+              <div className="discardButton button" onClick={()  => this.props.discardfunction(this.moveinfo())}><MdDelete /> discard</div>
 
             </div>
          
