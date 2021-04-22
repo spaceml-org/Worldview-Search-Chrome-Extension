@@ -124,7 +124,7 @@ class Foreground extends React.Component {
     this.componentDidMount = this.componentDidMount.bind(this);
     this.showSearchBox = this.showSearchBox.bind(this);
     this.showSearchSettings = this.showSearchSettings.bind(this);
-    this.callAPI = this.callAPI.bind(this);
+  
     this.close = this.close.bind(this);
     this.settingsChange = this.settingsChange.bind(this);
     this.settingsSubmit = this.settingsSubmit.bind(this);
@@ -276,7 +276,7 @@ class Foreground extends React.Component {
 
     var largestdimension = Math.max(x, y);
 
-    var allowedresolutions = [4096];
+    var allowedresolutions = [1024,2048,4096];
 
     var closestdimension = closest(largestdimension, allowedresolutions);
 
@@ -311,8 +311,7 @@ class Foreground extends React.Component {
   }
 
   startsearch(){
-    
-    // this.callAPI(this.state.searchitems);
+   
     this.refinesearch();
   }
 
@@ -331,63 +330,7 @@ class Foreground extends React.Component {
   /**
    * Call the API
    */
-  callAPI(searchdata) {
-    this.setState({
-      loaded:false,
-    })
-    const headers = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-
-      "Access-Control-Allow-Headers":
-        "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
-    };
-    var searchimage = searchdata[0].image;
-    var date = searchdata[0].year+"-"+searchdata[0].month+"-"+searchdata[0].day;
-    var search = [
-      {
-        inputurl: searchimage,
-        startdate: date,
-        enddate: date,
-      },
-    ];
-
-    // var searchurl = "https://fdl-us-knowledge.ue.r.appspot.com/similarimages/";
-
-    console.log("Posting to API:");
-    console.log(search[0]);
-    axios
-      .post(this.state.searchurl, qs.stringify(search[0]), { headers: headers })
-      .then((res) => {
-        console.log("API returns:");
-        console.log(res);
-        var found = [];
-        res.data.forEach((data, index) => {
-          var stringed = JSON.stringify(data);
-
-          var ts = stringed.search('"ts');
-
-          var firsthalf = stringed.substring(0, ts - 3);
-          firsthalf = firsthalf + '}"';
-
-          var json = JSON.parse(firsthalf);
-          var compiled = JSON.parse(json);
-
-          found.push({
-            image: compiled.urldisplayimage,
-            id: "item-" + (index + 2),
-            content: compiled.BBOX,
-          });
-        });
-        this.setState({
-          founditems: found,
-          loaded: true,
-        });
-      })
-      .catch((err) => {
-        console.log(err.response);
-      });
-  }
+  
 
   close() {
     this.setState({
@@ -464,13 +407,18 @@ class Foreground extends React.Component {
       founditems:[]
     })
 
-    const headers = {
+    const config_headers = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 
       "Access-Control-Allow-Headers":
         "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
     };
+
+    const config = {
+      headers: config_headers,
+      timeout: 100000000
+    }
 
     if(this.state.searchitems.length < 2 && this.state.searchitems[0].embeddings == null ){
       // searching using the original image
@@ -483,7 +431,7 @@ class Foreground extends React.Component {
 
     var body = {
       startdate: "08-15-2020",
-      enddate: "08-24-2020",
+      enddate: "08-15-2020",
     };
 
       
@@ -506,8 +454,9 @@ class Foreground extends React.Component {
     console.log("multisearch sending:");
     console.log(params);
     return qs.stringify(params, {indices:false})
-  }
-    })
+  },
+  
+  config } )
       .then((res) => {
         console.log("Multi search returns:")
         console.log(res.data[0]);
@@ -543,9 +492,23 @@ class Foreground extends React.Component {
         
       })
       .catch((err) => {
-        console.log(err.response)
+        if(err.response){
+          console.log("error response:")
+          console.log(err.response)
+        } else if(err.request){
+          console.log("error request:")
+          console.log(err.request)
+        } else {
+          console.log("error:")
+          console.log(err)
+        }
+        
+        
+        this.refinesearch();
       })
     } else {
+
+      
     
 
       // multiple embeddings search here we go!
@@ -568,9 +531,22 @@ class Foreground extends React.Component {
         }
       })
 
+      const config_headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  
+        "Access-Control-Allow-Headers":
+          "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
+      };
+  
+      const config = {
+        headers: config_headers,
+        timeout:100000000
+      }
+
       var body = {
         startdate: "08-15-2020",
-        enddate: "08-24-2020",
+        enddate: "08-15-2020",
         inputembeddings:embeddings.replace(/\s\s+/g, ' '),
       }
 
@@ -590,13 +566,13 @@ class Foreground extends React.Component {
           bound_box:0,
           model_name:0,
           ann_lib:0,
-          return_items: 5,
+          return_items: 10,
           products:"viirs",
         },paramsSerializer: params => {
           console.log("embeddings search:");
           console.log(params);
           return qs.stringify(params, {indices:false})
-        }})
+        }}, config)
         .then((res) => {
           console.log("embeddings search response")
           console.log(res.data)
@@ -636,8 +612,10 @@ class Foreground extends React.Component {
 
         })
         .catch((err) =>{
-          console.log("error")
-          console.log(err.response)
+          
+          console.log("multiple embeddings error")
+          console.log(err);
+          this.refinesearch();
         })
     }
 
