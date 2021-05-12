@@ -5,9 +5,15 @@ import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import "./style.css";
 import logo from "./logo.png";
 import axios from "axios";
-import { MdSearch, MdClose, MdImage, MdGrade, MdYoutubeSearchedFor } from 'react-icons/md';
-import { IoEarth } from 'react-icons/io5';
-import { HiOutlineSwitchVertical } from 'react-icons/hi';
+import {
+  MdSearch,
+  MdClose,
+  MdImage,
+  MdGrade,
+  MdYoutubeSearchedFor,
+} from "react-icons/md";
+import { IoEarth } from "react-icons/io5";
+import { HiOutlineSwitchVertical } from "react-icons/hi";
 
 import qs from "qs";
 import { Ring } from "react-spinners-css";
@@ -35,15 +41,16 @@ const dialogStyle = {
 };
 
 function closest(needle, haystack) {
+  // returns which of [1024,2048,4096] the i/p resoultion is closest to, threshold = 512
   return haystack.reduce((a, b) => {
-      let aDiff = Math.abs(a - needle);
-      let bDiff = Math.abs(b - needle);
+    let aDiff = Math.abs(a - needle);
+    let bDiff = Math.abs(b - needle);
 
-      if (aDiff == bDiff) {
-          return a > b ? a : b;
-      } else {
-          return bDiff < aDiff ? b : a;
-      }
+    if (aDiff == bDiff) {
+      return a > b ? a : b;
+    } else {
+      return bDiff < aDiff ? b : a;
+    }
   });
 }
 
@@ -64,13 +71,12 @@ const move = (source, destination, droppableSource, droppableDestination) => {
   return result;
 };
 
-function getMonthFromString(mon){
-  return new Date(Date.parse(mon +" 1, 2012")).getMonth()+1
-};
+function getMonthFromString(mon) {
+  return new Date(Date.parse(mon + " 1, 2012")).getMonth() + 1;
+}
 
 function minTwoDigits(n) {
-
-  return (n < 10 ? '0' : '') + n;
+  return (n < 10 ? "0" : "") + n;
 }
 
 /**
@@ -105,7 +111,7 @@ class Foreground extends React.Component {
     this.state = {
       show: false,
       showres: false,
-      showbuttons:false,
+      showbuttons: false,
       showsearchsettings: false,
       showrefine: false,
       launch: true,
@@ -124,7 +130,7 @@ class Foreground extends React.Component {
     this.componentDidMount = this.componentDidMount.bind(this);
     this.showSearchBox = this.showSearchBox.bind(this);
     this.showSearchSettings = this.showSearchSettings.bind(this);
-  
+
     this.close = this.close.bind(this);
     this.settingsChange = this.settingsChange.bind(this);
     this.settingsSubmit = this.settingsSubmit.bind(this);
@@ -138,7 +144,7 @@ class Foreground extends React.Component {
    * To open a dialog window when a card is clicked
    */
   cardClick(param) {
-    console.log(param);
+    console.log("param= ", param);
     this.simpleDialog.show();
     this.setState({
       clickeditem: param,
@@ -213,7 +219,7 @@ class Foreground extends React.Component {
       self.setState(
         {
           show: true,
-          showbuttons:true
+          showbuttons: true,
         },
         () => {
           console.log(this.state);
@@ -228,10 +234,11 @@ class Foreground extends React.Component {
   showSearchBox() {
     this.setState({
       showres: true,
-      showbuttons:false,
-      loaded:true
+      showbuttons: false,
+      loaded: true,
     });
 
+    // latitude and longitude of top and bottom of the bounded box
     var top = document.getElementById("wv-image-top").textContent;
     var bottom = document.getElementById("wv-image-bottom").textContent;
 
@@ -247,6 +254,17 @@ class Foreground extends React.Component {
     bottom = bottom1 + "," + bottom2;
 
     var full = bottom + "," + top;
+
+    //full contains a csv of bottom coordinates followed by top coordinates
+    //storing the float version to state to compare coordinates with found items
+    var newfull = full.split(",");
+    newfull = newfull.map((item) => {
+      return parseFloat(item);
+    });
+    console.log("new full: ", newfull);
+    this.setState({
+      baseCoordinates: newfull,
+    });
 
     var year = document.getElementById("year-timeline").value;
 
@@ -266,52 +284,65 @@ class Foreground extends React.Component {
 
     var dimsplit = dimensions.split("x");
 
+    // x and y are the resolutions of the image in the search set, we get the max of these two and pass it to the closest function
+
     var x = dimsplit[0];
 
     var y = dimsplit[1];
 
-    x = x.replace(/\D/g,'');
+    x = x.replace(/\D/g, "");
 
-    y = y.replace(/\D/g,'');
+    y = y.replace(/\D/g, "");
 
     var largestdimension = Math.max(x, y);
 
-    var allowedresolutions = [1024,2048,4096];
+    var allowedresolutions = [1024, 2048, 4096];
+
+    //the closest function returns which value our input is closest to, threshold = 512,
+    //example:  i/p: 1024 + (<=511) , o/p = 1024, i/p: 1024 + (>=512) , o/p = 2048, and similar for 2048 and 4096
 
     var closestdimension = closest(largestdimension, allowedresolutions);
 
-    console.log("x: "+ x + "y: "+ y + "largest: "+ largestdimension);
-
+    console.log("x: " + x + "y: " + y + "largest: " + largestdimension);
+    console.log("dimension set as: ", closestdimension);
     var trainingsetting = "RANDOM";
 
-    if(closestdimension == 4096){
+    if (closestdimension == 4096) {
       trainingsetting = "NONE";
     }
 
     var searchdata = [
       {
         id: "item-1",
-        dimension:closestdimension,
+        dimension: closestdimension,
         training: trainingsetting,
         year: year,
-        month: month, 
+        month: month,
         day: day,
         content: full,
         image:
-          "https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor&CRS=EPSG:4326&TIME="+year+"-"+month+"-"+day+"&WRAP=DAY&BBOX=" +
+          "https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor&CRS=EPSG:4326&TIME=" +
+          year +
+          "-" +
+          month +
+          "-" +
+          day +
+          "&WRAP=DAY&BBOX=" +
           full +
-          "&FORMAT=image/jpeg&WIDTH="+largestdimension+"&HEIGHT="+largestdimension+"&AUTOSCALE=False&ts=1611851763001",
+          "&FORMAT=image/jpeg&WIDTH=" +
+          largestdimension +
+          "&HEIGHT=" +
+          largestdimension +
+          "&AUTOSCALE=False&ts=1611851763001",
       },
     ];
 
     this.setState({
       searchitems: searchdata,
     });
-    
   }
 
-  startsearch(){
-   
+  startsearch() {
     this.refinesearch();
   }
 
@@ -321,16 +352,13 @@ class Foreground extends React.Component {
   showSearchSettings() {
     this.setState({
       showsearchsettings: true,
-      showbuttons:false
+      showbuttons: false,
     });
   }
-
-  
 
   /**
    * Call the API
    */
-  
 
   close() {
     this.setState({
@@ -341,23 +369,20 @@ class Foreground extends React.Component {
   }
 
   componentDidMount() {
-    console.log("component mounted")
+    console.log("component mounted");
     var wvbutton = document.getElementById("wv-image-button");
-    
 
     if (wvbutton) {
-      console.log("found wv button")
+      console.log("found wv button");
       this.assignWvbutton(wvbutton);
     }
   }
 
-  settingsChange(event){
-    this.setState({searchurl: event.target.value});
-
+  settingsChange(event) {
+    this.setState({ searchurl: event.target.value });
   }
 
-  settingsSubmit(event){
-    
+  settingsSubmit(event) {
     this.setState({
       showres: false,
       showbuttons: true,
@@ -366,46 +391,74 @@ class Foreground extends React.Component {
     event.preventDefault();
   }
 
-  moveToSearch(data){
+  moveToSearch(data) {
     console.log("move to search");
     console.log(data.source.index);
 
     const moving = this.state.founditems[data.source.index];
-    console.log(moving)
+    console.log(moving);
     var newsearch = this.state.searchitems;
-    newsearch.splice(0,0,moving);
+    newsearch.splice(0, 0, moving);
 
     var newfound = this.state.founditems;
-    newfound.splice(data.source.index,1)
+    newfound.splice(data.source.index, 1);
 
     this.setState({
       searchitems: newsearch,
-      founditems: newfound
+      founditems: newfound,
     });
   }
 
-  discard(data){
+  discard(data) {
     console.log("discard");
     console.log(data.source.index);
     var newsearch = this.state.searchitems;
-    newsearch.splice(data.source.index,1);
+    newsearch.splice(data.source.index, 1);
 
     this.setState({
       searchitems: newsearch,
     });
-
   }
 
- /**
-  * refine the search
-  */
-  
-  refinesearch(){
+  //util function for calculating coordinate distance
+  distance(lat1, lon1, lat2, lon2, unit) {
+    if (lat1 == lat2 && lon1 == lon2) {
+      return 0;
+    } else {
+      var radlat1 = (Math.PI * lat1) / 180;
+      var radlat2 = (Math.PI * lat2) / 180;
+      var theta = lon1 - lon2;
+      var radtheta = (Math.PI * theta) / 180;
+      var dist =
+        Math.sin(radlat1) * Math.sin(radlat2) +
+        Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+      if (dist > 1) {
+        dist = 1;
+      }
+      dist = Math.acos(dist);
+      dist = (dist * 180) / Math.PI;
+      dist = dist * 60 * 1.1515;
+      if (unit == "K") {
+        dist = dist * 1.609344;
+      }
+      if (unit == "N") {
+        dist = dist * 0.8684;
+      }
+      return dist;
+    }
+  }
 
+  /**
+   * refine the search
+   */
+
+  refinesearch() {
     this.setState({
-      loaded:false,
-      founditems:[]
-    })
+      loaded: false,
+      founditems: [],
+    });
+
+    console.log("search items = ", this.state.searchitems);
 
     const config_headers = {
       "Access-Control-Allow-Origin": "*",
@@ -417,215 +470,247 @@ class Foreground extends React.Component {
 
     const config = {
       headers: config_headers,
-      timeout: 100000000
-    }
-
-    if(this.state.searchitems.length < 2 && this.state.searchitems[0].embeddings == null ){
-      // searching using the original image
-      var inputurls = this.state.searchitems.map( a => a.image);
-    console.log(inputurls);
-    
-
-    var resolution = this.state.searchitems[0].dimension;
-    resolution = parseInt(resolution);
-
-    var body = {
-      startdate: "08-15-2020",
-      enddate: "08-15-2020",
+      timeout: 100000000,
     };
 
-      
-    var searchurl = "https://fdl-us-knowledge.ue.r.appspot.com/similarimagesmultiple/"
-    console.log("Sending multi search POST");
+    if (
+      this.state.searchitems.length < 2 &&
+      this.state.searchitems[0].embeddings == null
+    ) {
+      // searching using the original image
+      var inputurls = this.state.searchitems.map((a) => a.image);
+      console.log(inputurls);
 
-    axios
-      .post(searchurl,qs.stringify(body),{params:{
-        resolutions:resolution,
-        bound_box:0,
-        model_name:0,
-        ann_lib:0,
-        return_items: 10,
-        products:"viirs",
-        inputurls:inputurls,
-        training_type: this.state.searchitems[0].training
-      }
-      ,
-  paramsSerializer: params => {
-    console.log("multisearch sending:");
-    console.log(params);
-    return qs.stringify(params, {indices:false})
-  },
-  
-  config } )
-      .then((res) => {
-        console.log("Multi search returns:")
-        console.log(res.data[0]);
-        var found = [];
-        res.data.forEach((data,i) =>{
-        
-        var json = data;
-        json = json.replaceAll("'", "")
-        json = json.split("output_urls");
-        json = json[1].slice(4);
-        json = json.slice(0, -4);
-        json = "["+json+"]";
-        console.log("json replaced : %o", json);
-        json = JSON.parse(json)
-        console.log("json parsed : %o", json);
-
-        json.forEach((output, index) =>{
-          found.push({
-            image: output.worldviewurl,
-            id: "item-" + (index+2),
-            content: output.BBOX,
-            embeddings: output.embedding,
-            dimension: resolution
-          });
-        });
-
-        })
-        
-        this.setState({
-          founditems: found,
-          loaded: true,
-        });
-        
-      })
-      .catch((err) => {
-        if(err.response){
-          console.log("error response:")
-          console.log(err.response)
-        } else if(err.request){
-          console.log("error request:")
-          console.log(err.request)
-        } else {
-          console.log("error:")
-          console.log(err)
-        }
-        
-        
-        this.refinesearch();
-      })
-    } else {
-
-      
-    
-
-      // multiple embeddings search here we go!
       var resolution = this.state.searchitems[0].dimension;
       resolution = parseInt(resolution);
-      
-      // construct the body
-      var embeddings = "";
-      this.state.searchitems.forEach((item, index) =>{
-        if(item.embeddings){
-          console.log("Embedding: %o", index);
-          console.log(item.embeddings);
-          var embedding = item.embeddings.slice(1,-1);
-          if(embeddings != ""){
-            embeddings = embeddings+","+embedding;
-          } else {
-            embeddings = embedding;
-          }
-          
-        }
-      })
-
-      const config_headers = {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  
-        "Access-Control-Allow-Headers":
-          "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
-      };
-  
-      const config = {
-        headers: config_headers,
-        timeout:100000000
-      }
 
       var body = {
         startdate: "08-15-2020",
         enddate: "08-15-2020",
-        inputembeddings:embeddings.replace(/\s\s+/g, ' '),
-      }
+      };
 
-      console.log("body before strinigfy:");
-      console.log(body);
-      
-      body = qs.stringify(body, {indices:false})
-      console.log("body:");
-      console.log(body);
-      
-      var searchurl = "https://fdl-us-knowledge.ue.r.appspot.com/similarembeddings/"
+      var searchurl =
+        "https://fdl-us-knowledge.ue.r.appspot.com/similarimagesmultiple/";
+      console.log("Sending multi search POST");
 
-     
       axios
-        .post(searchurl, body, {params:{
-          resolutions:resolution,
-          bound_box:0,
-          model_name:0,
-          ann_lib:0,
-          return_items: 10,
-          products:"viirs",
-        },paramsSerializer: params => {
-          console.log("embeddings search:");
-          console.log(params);
-          return qs.stringify(params, {indices:false})
-        }}, config)
+        .post(searchurl, qs.stringify(body), {
+          params: {
+            resolutions: resolution,
+            bound_box: 0,
+            model_name: 0,
+            ann_lib: 0,
+            return_items: 10,
+            products: "viirs",
+            inputurls: inputurls,
+            training_type: this.state.searchitems[0].training,
+          },
+          paramsSerializer: (params) => {
+            console.log("multisearch sending:");
+            console.log(params);
+            return qs.stringify(params, { indices: false });
+          },
+
+          config,
+        })
         .then((res) => {
-          console.log("embeddings search response")
-          console.log(res.data)
+          console.log("Multi search returns:");
+          console.log(res.data[0]);
           var found = [];
-          var json = res.data;
-          json = json.replaceAll("'", "")
+          res.data.forEach((data, i) => {
+            var json = data;
+            json = json.replaceAll("'", "");
+            json = json.split("output_urls");
+            json = json[1].slice(4);
+            json = json.slice(0, -4);
+            json = "[" + json + "]";
+            console.log("json replaced : %o", json);
+            json = JSON.parse(json);
+            console.log("json parsed : %o", json);
 
-          json = JSON.parse(json);
-          console.log("jsoned1:");
-          console.log(json);
-
-          json.forEach((string, index) =>{
-          
-            string = string.split("output_embeddings");
-            string = string[1].slice(5); 
-            string = string.slice(0, -2);
-            string = JSON.parse(string);
-            console.log("Stringed:");
-            console.log(string)
-            string.forEach((output, index) =>{
+            json.forEach((output, index) => {
               found.push({
-                image:output.worldviewurl,
-                id: "item-" + (index+2),
+                image: output.worldviewurl,
+                id: "item-" + (index + 2),
                 content: output.BBOX,
                 embeddings: output.embedding,
-                dimension: resolution
-              })
-            })
-          })
+                dimension: resolution,
+              });
+            });
+          });
 
-         
+          let stringCoordinates = found.map((item) => item.content);
+          console.log("String Contents:  ", stringCoordinates);
+
+          let floatCoordinates = found.map((item) => {
+            let newItem = item.content;
+            newItem = newItem.split(",");
+            newItem = newItem.map((element) => {
+              return parseFloat(element);
+            });
+            return newItem;
+          });
+
+          //base coord: bottom left , top right
+          // vertical lines are longitude
+          // 0th and 2nd indexes are longtidude
+          console.log("Base Contents:", this.state.baseCoordinates);
+          console.log("Float Contents:  ", floatCoordinates);
+
+          let diffList = [];
+          floatCoordinates.forEach((item) => {
+            diffList.push(
+              (this.distance(
+                item[1],
+                item[0],
+                this.state.baseCoordinates[1],
+                this.state.baseCoordinates[0]
+              ) +
+                this.distance(
+                  item[3],
+                  item[2],
+                  this.state.baseCoordinates[1],
+                  this.state.baseCoordinates[0]
+                )) /
+                2
+            );
+          });
+
+          diffList.sort(function (a, b) {
+            return a - b;
+          });
+          console.log("DiffList: ", diffList);
 
           this.setState({
             founditems: found,
             loaded: true,
           });
-
         })
-        .catch((err) =>{
-          
-          console.log("multiple embeddings error")
+        .catch((err) => {
+          if (err.response) {
+            console.log("error response:");
+            console.log(err.response);
+          } else if (err.request) {
+            console.log("error request:");
+            console.log(err.request);
+          } else {
+            console.log("error:");
+            console.log(err);
+          }
+
+          this.refinesearch();
+        });
+    } else {
+      // multiple embeddings search here we go!
+      var resolution = this.state.searchitems[0].dimension;
+      resolution = parseInt(resolution);
+
+      // construct the body -> combine embeddings of all searchitems
+      var embeddings = "";
+      this.state.searchitems.forEach((item, index) => {
+        if (item.embeddings) {
+          console.log("Embedding: %o", index);
+          console.log(item.embeddings);
+          var embedding = item.embeddings.slice(1, -1); // [second_index,second_last_index]
+          if (embeddings != "") {
+            embeddings = embeddings + "," + embedding;
+          } else {
+            embeddings = embedding;
+          }
+        }
+      });
+
+      const config_headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+
+        "Access-Control-Allow-Headers":
+          "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
+      };
+
+      const config = {
+        headers: config_headers,
+        timeout: 100000000,
+      };
+
+      var body = {
+        startdate: "08-15-2020",
+        enddate: "08-15-2020",
+        inputembeddings: embeddings.replace(/\s\s+/g, " "),
+      };
+
+      console.log("body before strinigfy:");
+      console.log(body);
+
+      body = qs.stringify(body, { indices: false });
+      console.log("body:");
+      console.log(body);
+
+      var searchurl =
+        "https://fdl-us-knowledge.ue.r.appspot.com/similarembeddings/";
+
+      axios
+        .post(
+          searchurl,
+          body,
+          {
+            params: {
+              resolutions: resolution,
+              bound_box: 0,
+              model_name: 0,
+              ann_lib: 0,
+              return_items: 10,
+              products: "viirs",
+            },
+            paramsSerializer: (params) => {
+              console.log("embeddings search:");
+              console.log(params);
+              return qs.stringify(params, { indices: false });
+            },
+          },
+          config
+        )
+        .then((res) => {
+          console.log("embeddings search response");
+          console.log(res.data);
+          var found = [];
+          var json = res.data;
+          json = json.replaceAll("'", "");
+
+          json = JSON.parse(json);
+          console.log("jsoned1:");
+          console.log(json);
+
+          json.forEach((string, index) => {
+            string = string.split("output_embeddings");
+            string = string[1].slice(5);
+            string = string.slice(0, -2);
+            string = JSON.parse(string);
+            console.log("Stringed:");
+            console.log(string);
+            string.forEach((output, index) => {
+              found.push({
+                image: output.worldviewurl,
+                id: "item-" + (index + 2),
+                content: output.BBOX,
+                embeddings: output.embedding,
+                dimension: resolution,
+              });
+            });
+          });
+
+          this.setState({
+            founditems: found,
+            loaded: true,
+          });
+        })
+        .catch((err) => {
+          console.log("multiple embeddings error");
           console.log(err);
           this.refinesearch();
-        })
+        });
     }
-
-    
-    
-
-    
   }
-
-
 
   render() {
     return (
@@ -638,36 +723,44 @@ class Foreground extends React.Component {
           style={{ display: this.state.showbuttons ? "block" : "none" }}
         >
           <button id="searchpromptbutton" onClick={this.showSearchBox}>
-          <IoEarth /> WorldView Similarity Search
+            <IoEarth /> WorldView Similarity Search
           </button>
 
           {/* <button id="searchsettingsbutton" onClick={this.showSearchSettings}>
             search settings
           </button> */}
         </div>
-        <div
+        {/* <div
           id="settings"
           style={{ display: this.state.showsearchsettings ? "block" : "none" }}
         >
           <h2>Search Settings</h2>
           <form onSubmit={this.settingsSubmit}>
-            <label>API URL:
-              <input type="text" 
-              name="searchurl" 
-              value={this.state.searchurl} 
-              onChange={this.settingsChange}
+            <label>
+              API URL:
+              <input
+                type="text"
+                name="searchurl"
+                name="searchurl"
+                name="searchurl"
+                value={this.state.searchurl}
+                value={this.state.searchurl}
+                value={this.state.searchurl}
+                onChange={this.settingsChange}
               />
             </label>
             <br />
             <input type="submit" value="Submit" />
           </form>
-        </div>
+        </div> */}
         <div
           id="results"
           style={{ display: this.state.showres ? "block" : "none" }}
         >
           <div className="topbar">
-            <p><IoEarth /> <b>WorldView</b> Similarity Search</p>
+            <p>
+              <IoEarth /> <b>WorldView</b> Similarity Search
+            </p>
             <div id="closebutton" onClick={this.close}>
               <MdClose />
             </div>
@@ -696,7 +789,7 @@ class Foreground extends React.Component {
                           droppable={"droppable"}
                           movetosearchfunction={this.moveToSearch}
                           discardfunction={this.discard}
-                          hasmovetosearch = {false}
+                          hasmovetosearch={false}
                         />
                       ))}
                       {provided.placeholder}
@@ -705,37 +798,41 @@ class Foreground extends React.Component {
                 </Droppable>
               </div>
             </div>
-            <div className="refinebar">
-              {this.state.founditems.length > 0 
-              ?(
-              <div id="refineprompt">
-              <p><HiOutlineSwitchVertical /> <b>Refine your search</b> by moving found images to the search input.</p>
-              </div>
-              )
-              : (null)
-              }
-              
+            {/* <div className="refinebar"> */}
+            <div
+              className="refinebar"
+              id="search"
+              style={{
+                display: this.state.searchitems.length > 0 ? "block" : "none",
+              }}
+            >
+              {this.state.founditems.length > 0 ? (
+                <div id="refineprompt">
+                  <p>
+                    <HiOutlineSwitchVertical /> <b>Refine your search</b> by
+                    moving found images to the search input.
+                  </p>
+                </div>
+              ) : null}
+
               <div
                 id="refinebutton"
-                className={
-                  this.state.loaded == false
-                    ? "activebutton"
-                    : (null)
-                }
+                className={this.state.loaded == false ? "activebutton" : null}
                 onClick={this.startsearch}
               >
-                 {this.state.founditems.length > 0 
-              ?(
-                <MdYoutubeSearchedFor /> 
-              )
-              : (<MdSearch /> )
-              }
-                  &nbsp;Search 
+                {this.state.founditems.length > 0 ? (
+                  <MdYoutubeSearchedFor />
+                ) : (
+                  <MdSearch />
+                )}
+                &nbsp;Search
               </div>
               {/* <div id="downloadbutton">download all</div> */}
             </div>
             <div className="found-container">
-              <h2><MdImage /> Found Similar images: {this.state.founditems.length}</h2>
+              <h2>
+                <MdImage /> Found Similar images: {this.state.founditems.length}
+              </h2>
               <div className="droppable">
                 <Droppable droppableId="droppable2" direction="horizontal">
                   {(provided, snapshot) => (
@@ -745,7 +842,6 @@ class Foreground extends React.Component {
                       style={getFoundListStyle(snapshot.isDraggingOver)}
                     >
                       {this.state.founditems.map((item, index) => (
-                        
                         <Card
                           itemprop={item}
                           clickFunction={this.cardClick}
@@ -756,28 +852,40 @@ class Foreground extends React.Component {
                           droppable={"droppable2"}
                           movetosearchfunction={this.moveToSearch}
                           discardfunction={this.discard}
-                          hasmovetosearch = {true}
+                          hasmovetosearch={true}
                         />
-                        
                       ))}
                       {provided.placeholder}
-                      {this.state.founditems.length < 1 && this.state.loaded  ? (<div className="loader">
-                        
-                        <p>Press the search button above to<br /> perform a similarity search. <br/><br /> The results will show up here.</p>
-                      </div>):(
-                        null
-                      )}
+                      {this.state.founditems.length < 1 && this.state.loaded ? (
+                        <div className="loader">
+                          <p>
+                            Press the search button above to
+                            <br /> perform a similarity search. <br />
+                            <br /> The results will show up here.
+                          </p>
+                        </div>
+                      ) : null}
 
-                      {this.state.loaded ? (
-                      null
-                      ) : (
+                      {this.state.loaded ? null : (
                         <div className="loader">
                           <Ring color="white" />
-                          <p>Searching... Using {this.state.searchitems.length} image(s).</p>
+                          <p>
+                            Searching... Using {this.state.searchitems.length}{" "}
+                            image(s).
+                          </p>
                           <br />
                           <br />
-                          <p><TextLoop children={["Creating embeddings...", "Indexing the planet...", "Configuring models...", "Optimizing search area...", "Searching for similarities..."]} /></p>
-
+                          <p>
+                            <TextLoop
+                              children={[
+                                "Creating embeddings...",
+                                "Indexing the planet...",
+                                "Configuring models...",
+                                "Optimizing search area...",
+                                "Searching for similarities...",
+                              ]}
+                            />
+                          </p>
                         </div>
                       )}
                     </div>
@@ -802,7 +910,9 @@ class Foreground extends React.Component {
                 src={this.state.clickeditem.image}
               ></img>
               <p>Location: {this.state.clickeditem.content}</p>
-              <p>Download: <a href={this.state.clickeditem.image}>LINK</a></p>
+              <p>
+                Download: <a href={this.state.clickeditem.image}>LINK</a>
+              </p>
             </div>
           ) : (
             <p>nothing here</p>
