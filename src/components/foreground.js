@@ -575,7 +575,7 @@ class Foreground extends React.Component {
                 2
             );
           });
-
+          //to be changed
           diffList.sort(function (a, b) {
             return a - b;
           });
