@@ -32,12 +32,10 @@ const reorder = (list, startIndex, endIndex) => {
 };
 
 const dialogStyle = {
-  // backgroundColor: "white",
-  // top: 0,
-  // left: 0,
-  // marginLeft: 10,
-  // marginTop: 10,
-  // width: "inherit",
+  minHeight: "400px",
+  position: "fixed",
+  top: "30%",
+  left: "50%",
 };
 
 function closest(needle, haystack) {
@@ -117,9 +115,11 @@ class Foreground extends React.Component {
       launch: true,
       searchitems: [],
       founditems: [],
+      nearbyitems: [],
       rejectitems: [],
       clickeditem: [],
       screenshot: "",
+      nearbyclicked: false,
       firstrun: false,
       loaded: false,
       searchurl: "https://fdl-us-knowledge.ue.r.appspot.com/similarimages/",
@@ -515,7 +515,7 @@ class Foreground extends React.Component {
         })
         .then((res) => {
           console.log("Multi search returns:");
-          console.log(res.data[0]);
+          // console.log(res.data[0]);
           var found = [];
           res.data.forEach((data, i) => {
             var json = data;
@@ -524,9 +524,9 @@ class Foreground extends React.Component {
             json = json[1].slice(4);
             json = json.slice(0, -4);
             json = "[" + json + "]";
-            console.log("json replaced : %o", json);
+            // console.log("json replaced : %o", json);
             json = JSON.parse(json);
-            console.log("json parsed : %o", json);
+            // console.log("json parsed : %o", json);
 
             json.forEach((output, index) => {
               found.push({
@@ -539,9 +539,6 @@ class Foreground extends React.Component {
             });
           });
 
-          let stringCoordinates = found.map((item) => item.content);
-          console.log("String Contents:  ", stringCoordinates);
-
           let floatCoordinates = found.map((item) => {
             let newItem = item.content;
             newItem = newItem.split(",");
@@ -551,12 +548,11 @@ class Foreground extends React.Component {
             return newItem;
           });
 
-          //base coord: bottom left , top right
+          // base coord: bottom left , top right
           // vertical lines are longitude
           // 0th and 2nd indexes are longtidude
-          console.log("Base Contents:", this.state.baseCoordinates);
-          console.log("Float Contents:  ", floatCoordinates);
-
+          // console.log("Base Contents:", this.state.baseCoordinates);
+          // console.log("Float Contents:  ", floatCoordinates);
           let diffList = [];
           floatCoordinates.forEach((item) => {
             diffList.push(
@@ -569,20 +565,40 @@ class Foreground extends React.Component {
                 this.distance(
                   item[3],
                   item[2],
-                  this.state.baseCoordinates[1],
-                  this.state.baseCoordinates[0]
+                  this.state.baseCoordinates[3],
+                  this.state.baseCoordinates[2]
                 )) /
                 2
             );
           });
-          //to be changed
+          // console.log("Found Items: ", found);
+          let newfound = [];
+          found.forEach((item, index) => {
+            newfound.push({
+              image: item.image,
+              id: item.id,
+              content: item.content,
+              embeddings: item.embeddings,
+              dimension: item.dimension,
+              distance: diffList[index],
+            });
+          });
+          // console.log("Diff List: ", diffList);
+          // console.log("New Found: ", newfound);
           diffList.sort(function (a, b) {
             return a - b;
           });
-          console.log("DiffList: ", diffList);
-
+          let nearby = diffList.slice(0, 5);
+          let nearbyitems = [];
+          newfound.forEach((item) => {
+            nearby.forEach((element) => {
+              if (element === item.distance) nearbyitems.push(item);
+            });
+          });
+          // console.log("Nearby Items:", nearbyitems);
           this.setState({
             founditems: found,
+            nearbyitems: nearbyitems,
             loaded: true,
           });
         })
@@ -699,10 +715,71 @@ class Foreground extends React.Component {
             });
           });
 
-          this.setState({
-            founditems: found,
-            loaded: true,
+          let floatCoordinates = found.map((item) => {
+            let newItem = item.content;
+            newItem = newItem.split(",");
+            newItem = newItem.map((element) => {
+              return parseFloat(element);
+            });
+            return newItem;
           });
+
+          // base coord: bottom left , top right
+          // vertical lines are longitude
+          // 0th and 2nd indexes are longtidude
+          // console.log("Base Contents:", this.state.baseCoordinates);
+          // console.log("Float Contents:  ", floatCoordinates);
+          let diffList = [];
+          floatCoordinates.forEach((item) => {
+            diffList.push(
+              (this.distance(
+                item[1],
+                item[0],
+                this.state.baseCoordinates[1],
+                this.state.baseCoordinates[0]
+              ) +
+                this.distance(
+                  item[3],
+                  item[2],
+                  this.state.baseCoordinates[1],
+                  this.state.baseCoordinates[0]
+                )) /
+                2
+            );
+          });
+          // console.log("Found Items: ", found);
+          let newfound = [];
+          found.forEach((item, index) => {
+            newfound.push({
+              image: item.image,
+              id: item.id,
+              content: item.content,
+              embeddings: item.embeddings,
+              dimension: item.dimension,
+              distance: diffList[index],
+            });
+          });
+          // console.log("Diff List: ", diffList);
+          // console.log("New Found: ", newfound);
+          diffList.sort(function (a, b) {
+            return a - b;
+          });
+          let nearby = diffList.slice(0, 5);
+          let nearbyitems = [];
+          newfound.forEach((item) => {
+            nearby.forEach((element) => {
+              if (element === item.distance) nearbyitems.push(item);
+            });
+          });
+
+          this.setState(
+            {
+              founditems: found,
+              nearbyitems: nearbyitems,
+              loaded: true,
+            },
+            console.log(this.state.founditems)
+          );
         })
         .catch((err) => {
           console.log("multiple embeddings error");
@@ -713,10 +790,13 @@ class Foreground extends React.Component {
   }
 
   render() {
+    console.log("len= ", this.state.nearbyitems.length);
     return (
       <div
         id="popup-cover"
-        style={{ display: this.state.show ? "block" : "none" }}
+        style={{
+          display: this.state.show ? "block" : "none",
+        }}
       >
         <div
           id="searchprompt"
@@ -730,29 +810,6 @@ class Foreground extends React.Component {
             search settings
           </button> */}
         </div>
-        {/* <div
-          id="settings"
-          style={{ display: this.state.showsearchsettings ? "block" : "none" }}
-        >
-          <h2>Search Settings</h2>
-          <form onSubmit={this.settingsSubmit}>
-            <label>
-              API URL:
-              <input
-                type="text"
-                name="searchurl"
-                name="searchurl"
-                name="searchurl"
-                value={this.state.searchurl}
-                value={this.state.searchurl}
-                value={this.state.searchurl}
-                onChange={this.settingsChange}
-              />
-            </label>
-            <br />
-            <input type="submit" value="Submit" />
-          </form>
-        </div> */}
         <div
           id="results"
           style={{ display: this.state.showres ? "block" : "none" }}
@@ -798,7 +855,6 @@ class Foreground extends React.Component {
                 </Droppable>
               </div>
             </div>
-            {/* <div className="refinebar"> */}
             <div
               className="refinebar"
               id="search"
@@ -806,15 +862,6 @@ class Foreground extends React.Component {
                 display: this.state.searchitems.length > 0 ? "block" : "none",
               }}
             >
-              {this.state.founditems.length > 0 ? (
-                <div id="refineprompt">
-                  <p>
-                    <HiOutlineSwitchVertical /> <b>Refine your search</b> by
-                    moving found images to the search input.
-                  </p>
-                </div>
-              ) : null}
-
               <div
                 id="refinebutton"
                 className={this.state.loaded == false ? "activebutton" : null}
@@ -827,13 +874,54 @@ class Foreground extends React.Component {
                 )}
                 &nbsp;Search
               </div>
-              {/* <div id="downloadbutton">download all</div> */}
+              {this.state.founditems.length > 0 ? (
+                <div id="refineprompt">
+                  <p>
+                    <HiOutlineSwitchVertical /> <b>Refine your search</b> by
+                    moving found images to the search input.
+                  </p>
+                </div>
+              ) : null}
             </div>
             <div className="found-container">
-              <h2>
+              <h2
+                style={{
+                  display: this.state.nearbyclicked ? "none" : "block",
+                }}
+              >
                 <MdImage /> Found Similar images: {this.state.founditems.length}
               </h2>
-              <div className="droppable">
+              <h2
+                style={{
+                  display: this.state.nearbyclicked ? "block" : "none",
+                }}
+              >
+                <MdImage /> Found Nearby images: {this.state.nearbyitems.length}
+              </h2>
+              <button
+                className="nearby-btn"
+                style={{
+                  display: this.state.nearbyclicked ? "none" : "block",
+                }}
+                onClick={() => this.setState({ nearbyclicked: true })}
+              >
+                View Nearby Items
+              </button>
+              <button
+                className="nearby-btn"
+                style={{
+                  display: this.state.nearbyclicked ? "block" : "none",
+                }}
+                onClick={() => this.setState({ nearbyclicked: false })}
+              >
+                View All Items
+              </button>
+              <div
+                className="droppable"
+                style={{
+                  display: this.state.nearbyclicked ? "none" : "block",
+                }}
+              >
                 <Droppable droppableId="droppable2" direction="horizontal">
                   {(provided, snapshot) => (
                     <div
@@ -842,6 +930,70 @@ class Foreground extends React.Component {
                       style={getFoundListStyle(snapshot.isDraggingOver)}
                     >
                       {this.state.founditems.map((item, index) => (
+                        <Card
+                          itemprop={item}
+                          clickFunction={this.cardClick}
+                          keyprop={item.id}
+                          idprop={item.id}
+                          indexprop={index}
+                          image={item.image}
+                          droppable={"droppable2"}
+                          movetosearchfunction={this.moveToSearch}
+                          discardfunction={this.discard}
+                          hasmovetosearch={true}
+                        />
+                      ))}
+                      {provided.placeholder}
+                      {this.state.founditems.length < 1 && this.state.loaded ? (
+                        <div className="loader">
+                          <p>
+                            Press the search button above to
+                            <br /> perform a similarity search. <br />
+                            <br /> The results will show up here.
+                          </p>
+                        </div>
+                      ) : null}
+
+                      {this.state.loaded ? null : (
+                        <div className="loader">
+                          <Ring color="white" />
+                          <p>
+                            Searching... Using {this.state.searchitems.length}{" "}
+                            image(s).
+                          </p>
+                          <br />
+                          <br />
+                          <p>
+                            <TextLoop
+                              children={[
+                                "Creating embeddings...",
+                                "Indexing the planet...",
+                                "Configuring models...",
+                                "Optimizing search area...",
+                                "Searching for similarities...",
+                              ]}
+                            />
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </Droppable>
+              </div>
+              <div
+                className="droppable"
+                style={{
+                  display: this.state.nearbyclicked ? "block" : "none",
+                }}
+              >
+                <Droppable droppableId="droppable2" direction="horizontal">
+                  {(provided, snapshot) => (
+                    <div
+                      className="droppablecont"
+                      ref={provided.innerRef}
+                      style={getFoundListStyle(snapshot.isDraggingOver)}
+                    >
+                      {this.state.nearbyitems.map((item, index) => (
                         <Card
                           itemprop={item}
                           clickFunction={this.cardClick}
