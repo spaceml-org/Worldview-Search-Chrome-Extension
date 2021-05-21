@@ -554,7 +554,9 @@ class Foreground extends React.Component {
           // console.log("Base Contents:", this.state.baseCoordinates);
           // console.log("Float Contents:  ", floatCoordinates);
           let diffList = [];
+          let condensedlist = [];
           floatCoordinates.forEach((item) => {
+            //get the diff bw this image and search item image
             diffList.push(
               (this.distance(
                 item[1],
@@ -570,10 +572,21 @@ class Foreground extends React.Component {
                 )) /
                 2
             );
+            // condense the coordinates of this image into 2 coordinates, to be able to view it on map using marker
+            let bottom = (item[0] + item[2]) / 2;
+            let top = (item[1] + item[3]) / 2;
+            condensedlist.push("&s=" + String(top) + "," + String(bottom));
+            // console.log("coord is :", coord);
           });
           // console.log("Found Items: ", found);
           let newfound = [];
           found.forEach((item, index) => {
+            //adding the condensed location to found items, is also added to nearby in newfound.push
+            let time = new URLSearchParams(item.image).get("TIME");
+            item.searchlocation =
+              "?v=-166.02834055119263,-88.04645825821608,207.31713381220345,87.44535976936983+&t=" +
+              time +
+              condensedlist[index];
             newfound.push({
               image: item.image,
               id: item.id,
@@ -581,6 +594,7 @@ class Foreground extends React.Component {
               embeddings: item.embeddings,
               dimension: item.dimension,
               distance: diffList[index],
+              searchlocation: time + condensedlist[index],
             });
           });
           // console.log("Diff List: ", diffList);
@@ -730,6 +744,7 @@ class Foreground extends React.Component {
           // console.log("Base Contents:", this.state.baseCoordinates);
           // console.log("Float Contents:  ", floatCoordinates);
           let diffList = [];
+          let condensedlist = [];
           floatCoordinates.forEach((item) => {
             diffList.push(
               (this.distance(
@@ -746,10 +761,22 @@ class Foreground extends React.Component {
                 )) /
                 2
             );
+            // condense the coordinates of this image into 2 coordinates, to be able to view it on map using marker
+            let bottom = (item[0] + item[2]) / 2;
+            let top = (item[1] + item[3]) / 2;
+            let time = new URLSearchParams(item.image).get("TIME");
+            condensedlist.push("&s=" + String(top) + "," + String(bottom));
+            // console.log("coord is :", coord);
           });
           // console.log("Found Items: ", found);
           let newfound = [];
           found.forEach((item, index) => {
+            //adding the condensed location to found items, is also added to nearby in newfound.push
+            let time = new URLSearchParams(item.image).get("TIME");
+            item.searchlocation =
+              "?v=-166.02834055119263,-88.04645825821608,207.31713381220345,87.44535976936983+&t=" +
+              time +
+              condensedlist[index];
             newfound.push({
               image: item.image,
               id: item.id,
@@ -757,6 +784,7 @@ class Foreground extends React.Component {
               embeddings: item.embeddings,
               dimension: item.dimension,
               distance: diffList[index],
+              searchlocation: time + condensedlist[index],
             });
           });
           // console.log("Diff List: ", diffList);
@@ -790,7 +818,7 @@ class Foreground extends React.Component {
   }
 
   render() {
-    console.log("len= ", this.state.nearbyitems.length);
+    console.log("clicked item= ", this.state.clickeditem.content);
     return (
       <div
         id="popup-cover"
@@ -847,6 +875,7 @@ class Foreground extends React.Component {
                           movetosearchfunction={this.moveToSearch}
                           discardfunction={this.discard}
                           hasmovetosearch={false}
+                          showview={false}
                         />
                       ))}
                       {provided.placeholder}
@@ -941,6 +970,8 @@ class Foreground extends React.Component {
                           movetosearchfunction={this.moveToSearch}
                           discardfunction={this.discard}
                           hasmovetosearch={true}
+                          searchlocation={item.searchlocation}
+                          showview={true}
                         />
                       ))}
                       {provided.placeholder}
@@ -1005,6 +1036,8 @@ class Foreground extends React.Component {
                           movetosearchfunction={this.moveToSearch}
                           discardfunction={this.discard}
                           hasmovetosearch={true}
+                          searchlocation={item.searchlocation}
+                          showview={true}
                         />
                       ))}
                       {provided.placeholder}

@@ -201,8 +201,8 @@ video {
 
 .loader {
   color: white;
-  margin-left: 30vw;
-  margin-top: 13vh;
+  margin-left: 22vw;
+  margin-top: 12vh;
   transform: translateX(-50%);
   text-align: center;
 }
@@ -473,6 +473,15 @@ h2 {
   height: 16%;
   margin-left: 3px;
   margin-top: -35px;
+}
+
+.cardButtonbar-top {
+  position: absolute;
+  width: 100%;
+  float: left;
+  height: 16%;
+  margin-left: 1.5px;
+  margin-top: 1.5px;
 }
 
 .cardDetails {
