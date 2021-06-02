@@ -16,6 +16,13 @@ const getItemStyle = (isDragging, draggableStyle) => ({
   ...draggableStyle,
 });
 
+const dialogStyle = {
+  minHeight: "600px",
+  position: "fixed",
+  top: "30%",
+  left: "50%",
+};
+
 class Card extends React.Component {
   state = {};
 
@@ -56,19 +63,20 @@ class Card extends React.Component {
                   View
                 </div>
                 <SkyLight
+                  dialogStyles={dialogStyle}
                   hideOnOverlayClicked
                   ref={(ref) => (this.simpleDialog = ref)}
-                  title="Sample Frame"
+                  title="Image Location"
                 >
                   <Iframe
                     url={
                       "https://worldview.earthdata.nasa.gov/" +
                       this.props.searchlocation
                     }
-                    width="300px"
-                    height="400px"
+                    width="500px"
+                    height="600px"
                     id="myId"
-                    className="myClassname"
+                    // className="frame-style"
                     display="initial"
                     position="relative"
                   />

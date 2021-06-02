@@ -19,14 +19,13 @@ import qs from "qs";
 import { Ring } from "react-spinners-css";
 
 import TextLoop from "react-text-loop";
-
+import DateRangePicker from "@wojtekmaj/react-daterange-picker";
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
 
 // a little function to help us with reordering the result
 const reorder = (list, startIndex, endIndex) => {
   const result = Array.from(list);
   const [removed] = result.splice(startIndex, 1);
-  result.splice(endIndex, 0, removed);
 
   return result;
 };
@@ -78,6 +77,11 @@ function minTwoDigits(n) {
 }
 
 /**
+ Presets for date picker
+ */
+const [min, max] = [new Date(2020, 7, 15), new Date(2020, 7, 24)];
+// const [value, onChange] = [new Date(2020, 8, 15), new Date(2020, 8, 24)];
+/**
  * Style for the search box
  */
 const getSearchListStyle = (isDraggingOver) => ({
@@ -122,6 +126,8 @@ class Foreground extends React.Component {
       nearbyclicked: false,
       firstrun: false,
       loaded: false,
+      viewdate: false,
+      daterange: [new Date(2020, 7, 24), new Date(2020, 7, 24)],
       searchurl: "https://fdl-us-knowledge.ue.r.appspot.com/similarimages/",
     };
 
@@ -136,8 +142,15 @@ class Foreground extends React.Component {
     this.settingsSubmit = this.settingsSubmit.bind(this);
     this.moveToSearch = this.moveToSearch.bind(this);
     this.discard = this.discard.bind(this);
-    this.refinesearch = this.refinesearch.bind(this);
+    this.search = this.refinesearch.bind(this);
     this.startsearch = this.startsearch.bind(this);
+    this.dateChange = this.dateChange.bind(this);
+  }
+
+  dateChange(range) {
+    this.setState({
+      daterange: range,
+    });
   }
 
   /**
@@ -343,6 +356,9 @@ class Foreground extends React.Component {
   }
 
   startsearch() {
+    // this.setState({
+    //   viewdate: true,
+    // });
     this.refinesearch();
   }
 
@@ -449,6 +465,16 @@ class Foreground extends React.Component {
   }
 
   /**
+   * Utility function to convert date obj to mm/dd/yyyy
+   */
+  getFormattedDate(obj) {
+    var month = obj.getMonth() + 1;
+    var day = obj.getDate();
+    var year = obj.getFullYear();
+    return month + "-" + day + "-" + year;
+  }
+
+  /**
    * refine the search
    */
 
@@ -473,6 +499,16 @@ class Foreground extends React.Component {
       timeout: 100000000,
     };
 
+    //setting url variables for view on map ( searchlocation )
+    const urlprefix =
+      "?l=Reference_Labels_15m(hidden),Reference_Features_15m(hidden),Coastlines_15m(hidden),VIIRS_NOAA20_CorrectedReflectance_TrueColor(hidden),VIIRS_SNPP_CorrectedReflectance_TrueColor,MODIS_Aqua_CorrectedReflectance_TrueColor(hidden),MODIS_Terra_CorrectedReflectance_TrueColor(hidden)&lg=true&df=true";
+    const zoomlevel =
+      "&v=-166.02834055119263,-88.04645825821608,207.31713381220345,87.44535976936983+&t=";
+
+    //setting varibles for start date and end date
+    let startdate = this.getFormattedDate(this.state.daterange[0]);
+    let enddate = this.getFormattedDate(this.state.daterange[1]);
+
     if (
       this.state.searchitems.length < 2 &&
       this.state.searchitems[0].embeddings == null
@@ -485,8 +521,8 @@ class Foreground extends React.Component {
       resolution = parseInt(resolution);
 
       var body = {
-        startdate: "08-15-2020",
-        enddate: "08-15-2020",
+        startdate: startdate,
+        enddate: enddate,
       };
 
       var searchurl =
@@ -584,9 +620,7 @@ class Foreground extends React.Component {
             //adding the condensed location to found items, is also added to nearby in newfound.push
             let time = new URLSearchParams(item.image).get("TIME");
             item.searchlocation =
-              "?v=-166.02834055119263,-88.04645825821608,207.31713381220345,87.44535976936983+&t=" +
-              time +
-              condensedlist[index];
+              urlprefix + zoomlevel + time + condensedlist[index];
             newfound.push({
               image: item.image,
               id: item.id,
@@ -594,7 +628,8 @@ class Foreground extends React.Component {
               embeddings: item.embeddings,
               dimension: item.dimension,
               distance: diffList[index],
-              searchlocation: time + condensedlist[index],
+              searchlocation:
+                urlprefix + zoomlevel + time + condensedlist[index],
             });
           });
           // console.log("Diff List: ", diffList);
@@ -609,6 +644,7 @@ class Foreground extends React.Component {
               if (element === item.distance) nearbyitems.push(item);
             });
           });
+          // console.log("FOund Items:", found);
           // console.log("Nearby Items:", nearbyitems);
           this.setState({
             founditems: found,
@@ -664,8 +700,8 @@ class Foreground extends React.Component {
       };
 
       var body = {
-        startdate: "08-15-2020",
-        enddate: "08-15-2020",
+        startdate: startdate,
+        enddate: enddate,
         inputembeddings: embeddings.replace(/\s\s+/g, " "),
       };
 
@@ -774,9 +810,7 @@ class Foreground extends React.Component {
             //adding the condensed location to found items, is also added to nearby in newfound.push
             let time = new URLSearchParams(item.image).get("TIME");
             item.searchlocation =
-              "?v=-166.02834055119263,-88.04645825821608,207.31713381220345,87.44535976936983+&t=" +
-              time +
-              condensedlist[index];
+              urlprefix + zoomlevel + time + condensedlist[index];
             newfound.push({
               image: item.image,
               id: item.id,
@@ -784,7 +818,8 @@ class Foreground extends React.Component {
               embeddings: item.embeddings,
               dimension: item.dimension,
               distance: diffList[index],
-              searchlocation: time + condensedlist[index],
+              searchlocation:
+                urlprefix + zoomlevel + time + condensedlist[index],
             });
           });
           // console.log("Diff List: ", diffList);
@@ -833,10 +868,6 @@ class Foreground extends React.Component {
           <button id="searchpromptbutton" onClick={this.showSearchBox}>
             <IoEarth /> WorldView Similarity Search
           </button>
-
-          {/* <button id="searchsettingsbutton" onClick={this.showSearchSettings}>
-            search settings
-          </button> */}
         </div>
         <div
           id="results"
@@ -891,6 +922,15 @@ class Foreground extends React.Component {
                 display: this.state.searchitems.length > 0 ? "block" : "none",
               }}
             >
+              <div className="date-wrapper">
+                <DateRangePicker
+                  onChange={this.dateChange}
+                  value={this.state.daterange}
+                  minDate={min}
+                  maxDate={max}
+                />
+                {console.log("date set as: ", this.state.daterange)}
+              </div>
               <div
                 id="refinebutton"
                 className={this.state.loaded == false ? "activebutton" : null}
