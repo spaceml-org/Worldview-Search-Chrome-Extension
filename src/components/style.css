@@ -106,7 +106,7 @@ video {
 }
 
 .search-container {
-  padding: 2em 2em 2em 2em;
+  padding: 0em 2em 2em 2em;
 }
 
 .found-container {
@@ -239,9 +239,29 @@ video {
     0 0px 10px rgb(255 255 255 / 50%);
 }
 
-.card_1 img {
+.output-img {
   width: 230px;
   height: 230px;
+  /* width: 230px;
+  height: 181px; */
+}
+
+.search-img {
+  /* width: 230px;
+  height: 230px; */
+  width: 230px;
+  height: 186px;
+}
+
+.droppable-search {
+  margin: 0px;
+  display: flex;
+  flex-direction: row;
+  overflow: auto;
+  height: 221px;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.16),
+    inset 0 3px 6px rgba(0, 0, 0, 0.23);
+  border: 1px solid white;
 }
 
 .droppable {
@@ -285,7 +305,8 @@ video {
 }
 
 .found-container {
-  margin-top: 0.5em;
+  /* margin-top: 0.5em; */
+  margin-top: -1.5em;
 }
 .draghandle {
   background-color: orange;
@@ -341,6 +362,31 @@ h2 {
 }
 
 #refinebutton {
+  margin-top: -14px;
+  margin-left: 22em;
+  width: 180px;
+  height: 43px;
+  transform: translate(-50%, -30%);
+  background-color: black;
+  font-family: urw-din;
+  text-transform: uppercase;
+  padding: 14px 30px 20px 39px;
+
+  font-size: 1rem;
+  color: white;
+  font-weight: 100;
+  letter-spacing: 2px;
+  border: solid white 2px;
+
+  box-shadow: 9px 9px 0px 2px rgb(0 0 0 / 100%),
+    8px 8px 0px 2px rgb(0 0 0 / 100%), 7px 7px 0px 2px rgb(0 0 0 / 100%),
+    6px 6px 0px 2px rgb(0 0 0 / 100%), 5px 5px 0px 2px rgb(0 0 0 / 100%),
+    4px 4px 0px 2px rgb(0 0 0 / 100%), 3px 3px 0px 2px rgb(0 0 0 / 100%),
+    2px 2px 0px 2px rgb(0 0 0 / 100%), 1px 1px 0px 2px rgb(0 0 0 / 100%);
+  transition: all 0.5s ease;
+}
+
+/* #refinebutton {
   margin-left: 350px;
   margin-top: 40px;
   width: 200px;
@@ -349,20 +395,20 @@ h2 {
   font-family: urw-din;
   text-transform: uppercase;
   padding: 20px 30px 20px 22px;
-  /* border-radius: 205px; */
+  
   font-size: 1.3rem;
   color: white;
   font-weight: 100;
   letter-spacing: 2px;
   border: solid white 2px;
-  /* -webkit-box-shadow: 20px 20px 0px 5px rgba(0,0,0,0.8); */
+  
   box-shadow: 9px 9px 0px 2px rgb(0 0 0 / 100%),
     8px 8px 0px 2px rgb(0 0 0 / 100%), 7px 7px 0px 2px rgb(0 0 0 / 100%),
     6px 6px 0px 2px rgb(0 0 0 / 100%), 5px 5px 0px 2px rgb(0 0 0 / 100%),
     4px 4px 0px 2px rgb(0 0 0 / 100%), 3px 3px 0px 2px rgb(0 0 0 / 100%),
     2px 2px 0px 2px rgb(0 0 0 / 100%), 1px 1px 0px 2px rgb(0 0 0 / 100%);
   transition: all 0.5s ease;
-}
+} */
 #refinebutton:hover {
   cursor: pointer;
   box-shadow: 0 1px 3px rgb(255 255 255 / 12%), 0 1px 2px rgb(255 255 255 / 24%),
@@ -379,6 +425,7 @@ h2 {
 
 #refinebutton:active {
   background-color: white;
+  /* background-color: rgb(236, 13, 13); */
   color: black;
   cursor: pointer;
   box-shadow: 0 1px 3px rgb(255 255 255 / 12%), 0 1px 2px rgb(255 255 255 / 24%),

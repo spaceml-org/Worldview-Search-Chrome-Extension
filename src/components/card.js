@@ -68,22 +68,28 @@ class Card extends React.Component {
                   ref={(ref) => (this.simpleDialog = ref)}
                   title="Image Location"
                 >
-                  <Iframe
-                    url={
-                      "https://worldview.earthdata.nasa.gov/" +
-                      this.props.searchlocation
-                    }
-                    width="500px"
-                    height="600px"
-                    id="myId"
-                    // className="frame-style"
-                    display="initial"
-                    position="relative"
-                  />
+                  {this.props.searchlocation ? (
+                    <Iframe
+                      url={
+                        // "https://worldview.earthdata.nasa.gov/" +
+                        this.props.searchlocation
+                      }
+                      width="500px"
+                      height="600px"
+                      id="myId"
+                      // className="frame-style"
+                      display="initial"
+                      position="relative"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <p> Please wait for search to complete!</p>
+                  )}
                 </SkyLight>
               </div>
             ) : null}
             <img
+              className={this.props.imgstyle}
               onClick={() => this.props.clickFunction(this.props.itemprop)}
               src={this.props.image}
             ></img>
