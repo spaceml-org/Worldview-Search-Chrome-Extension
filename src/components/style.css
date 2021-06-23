@@ -77,7 +77,7 @@ video {
 #popup-cover {
   /* display:none; */
   background-color: #212121;
-  width: 720px;
+  width: 833px;
   /* height:50px; */
   position: absolute;
   top: 2em;
@@ -106,7 +106,7 @@ video {
 }
 
 .search-container {
-  padding: 0em 2em 2em 2em;
+  padding: 1em 2em 2em 2em;
 }
 
 .found-container {
@@ -169,6 +169,7 @@ video {
   overflow: scroll;
   resize: vertical;
   height: 600px;
+  width: 833px;
 }
 
 #settings {
@@ -181,6 +182,8 @@ video {
 
 #popup-cover h2 {
   text-transform: uppercase;
+  text-align: center;
+  width: 700px;
   letter-spacing: 0px;
   font-family: urw-din;
   font-size: 0.9em;
@@ -201,7 +204,7 @@ video {
 
 .loader {
   color: white;
-  margin-left: 22vw;
+  margin-left: 50%;
   margin-top: 12vh;
   transform: translateX(-50%);
   text-align: center;
@@ -362,8 +365,8 @@ h2 {
 }
 
 #refinebutton {
-  margin-top: -14px;
-  margin-left: 22em;
+  margin-top: -30px;
+  margin-left: 50%;
   width: 180px;
   height: 43px;
   transform: translate(-50%, -30%);
@@ -488,7 +491,7 @@ h2 {
   color: white;
   padding: 33px !important;
   border: 1px solid white;
-  width: 650px !important;
+  width: 800px !important;
   box-shadow: 0 0px 8px rgb(255 255 255 / 10%), 0 0px 7px rgb(255 255 255 / 42%) !important;
 }
 

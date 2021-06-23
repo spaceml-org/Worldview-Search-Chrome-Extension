@@ -31,6 +31,9 @@ const reorder = (list, startIndex, endIndex) => {
 };
 
 const dialogStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   minHeight: "400px",
   position: "fixed",
   top: "30%",
@@ -511,6 +514,38 @@ class Foreground extends React.Component {
   }
 
   /**
+   * Utility function to calculate viewport distance
+   */
+  getViewport(
+    x_w,
+    y_w,
+    x_wmax,
+    y_wmax,
+    x_wmin,
+    y_wmin,
+    x_vmax,
+    y_vmax,
+    x_vmin,
+    y_vmin
+  ) {
+    // point on viewport
+    let x_v, y_v;
+
+    // scaling factors for x coordinate and y coordinate
+    let sx, sy;
+
+    // calculating Sx and Sy
+    sx = (x_vmax - x_vmin) / (x_wmax - x_wmin);
+    sy = (y_vmax - y_vmin) / (y_wmax - y_wmin);
+
+    // calculating the point on viewport
+    x_v = x_vmin + (x_w - x_wmin) * sx;
+    y_v = y_vmin + (y_w - y_wmin) * sy;
+
+    document.write("The point on viewport: (" + x_v + ", " + y_v + " )<br>");
+  }
+
+  /**
    * refine the search
    */
 
@@ -572,24 +607,15 @@ class Foreground extends React.Component {
         "https://fdl-us-knowledge.ue.r.appspot.com/similarimagesmultiple/";
       console.log("Sending multi search POST");
 
-      //3 lists to store responses from 3 API calls of 512,1024,2048
       let found1 = [];
-      let found2 = [];
-      let found3 = [];
-      //3 lists to store embedding distances of each resolution output
       let dist1 = [];
-      let dist2 = [];
-      let dist3 = [];
-      //an object to map the id of an image to its search location
       let searchmap = {};
-
-      //begin api calls
 
       //api call for 512
       axios
         .post(searchurl, qs.stringify(body), {
           params: {
-            resolutions: 1024,
+            resolutions: 512,
             bound_box: 0,
             model_name: 0,
             ann_lib: 0,
@@ -608,8 +634,7 @@ class Foreground extends React.Component {
         })
         .then((res) => {
           console.log("Multi search returns:");
-          // console.log(res.data[0]);
-          // var tempfound = [];
+          let condensedlist = [];
           res.data.forEach((data, i) => {
             var json = data;
             json = json.replaceAll("'", "");
@@ -617,10 +642,7 @@ class Foreground extends React.Component {
             json = json[1].slice(4);
             json = json.slice(0, -4);
             json = "[" + json + "]";
-            // console.log("json replaced : %o", json);
             json = JSON.parse(json);
-            // console.log("json parsed : %o", json);
-
             json.forEach((output, index) => {
               found1.push({
                 image: output.worldviewurl,
@@ -634,422 +656,31 @@ class Foreground extends React.Component {
                 distance: output.distance,
               });
               dist1.push(output.distance);
+              // condense the coordinates of this particular image into 2 coordinates, to be able to view it on map using marker
+              let coordinates = found1[index].content.split(",");
+              let bottom =
+                (parseFloat(coordinates[0]) + parseFloat(coordinates[2])) / 2;
+              let top =
+                (parseFloat(coordinates[1]) + parseFloat(coordinates[3])) / 2;
+              condensedlist.push("&s=" + String(top) + "," + String(bottom));
+              console.log("coord is :", coordinates);
+              //adding the condensed values and the time to our search map for the view on map feature, by mapping id of found1[idx] (current image) to location
+              let time = new URLSearchParams(found1[index].image).get("TIME");
+              searchmap[found1[index].id] =
+                urlprefix + zoomlevel + "&t=" + time + condensedlist[index];
             });
           });
 
-          let floatCoordinates = found1.map((item) => {
-            let newItem = item.content;
-            newItem = newItem.split(",");
-            newItem = newItem.map((element) => {
-              return parseFloat(element);
-            });
-            return newItem;
-          });
-
-          // base coord: bottom left , top right
-          // vertical lines are longitude
-          // 0th and 2nd indexes are longtidude
-          // console.log("Base Contents:", this.state.baseCoordinates);
-          // console.log("Float Contents:  ", floatCoordinates);
-          let diffList = [];
-          let condensedlist = [];
-          floatCoordinates.forEach((item) => {
-            //get the diff bw this image and search item image
-            diffList.push(
-              (this.distance(
-                item[1],
-                item[0],
-                this.state.baseCoordinates[1],
-                this.state.baseCoordinates[0]
-              ) +
-                this.distance(
-                  item[3],
-                  item[2],
-                  this.state.baseCoordinates[3],
-                  this.state.baseCoordinates[2]
-                )) /
-                2
-            );
-            // condense the coordinates of this image into 2 coordinates, to be able to view it on map using marker
-            let bottom = (item[0] + item[2]) / 2;
-            let top = (item[1] + item[3]) / 2;
-            condensedlist.push("&s=" + String(top) + "," + String(bottom));
-            // console.log("coord is :", coord);
-          });
-          // console.log("Found Items: ", found1);
-          let newfound = [];
-          found1.forEach((item, index) => {
-            //adding the condensed location to found1 items, is also added to nearby in newfo1und.push
-            let time = new URLSearchParams(item.image).get("TIME");
-            // item.searchlocation =
-            //   urlprefix + zoomlevel + time + condensedlist[index];
-            newfound.push({
-              image: item.image,
-              id: item.id,
-              content: item.content,
-              embeddings: item.embeddings,
-              dimension: item.dimension,
-              distance: diffList[index],
-              // searchlocation:
-              //   urlprefix + zoomlevel + time + condensedlist[index],
-            });
-            //mapping the id of this image to its search location (for map view feature)
-            searchmap[item.id] =
-              urlprefix + "&t=" + time + condensedlist[index];
-          });
-          // console.log("Diff List: ", diffList);
-          // console.log("New Found: ", newfo1und);
-          diffList.sort(function (a, b) {
-            return a - b;
-          });
-          let nearby = diffList.slice(0, 5);
-          let nearbyitems = [];
-          newfound.forEach((item) => {
-            nearby.forEach((element) => {
-              if (element === item.distance) nearbyitems.push(item);
-            });
-          });
-
-          // console.log("FOund Items:", found1);
-          // console.log("Nearby Items:", nearbyitems);
           console.log("distance1: ", dist1);
-
+          console.log("search_map: ", searchmap);
           this.setState(
             {
               founditems: found1,
               loaded: true,
-              // nearbyitems: nearbyitems,
+              searchmap: searchmap,
+              showview: true,
             },
-            () => {
-              console.log("old state: ", this.state.founditems);
-              //api call for 1024
-              axios
-                .post(searchurl, qs.stringify(body), {
-                  params: {
-                    resolutions: res2,
-                    bound_box: 0,
-                    model_name: 0,
-                    ann_lib: 0,
-                    return_items: 10,
-                    products: "viirs",
-                    inputurls: inputurls,
-                    training_type: this.state.searchitems[0].training,
-                  },
-                  paramsSerializer: (params) => {
-                    console.log("multisearch sending:");
-                    console.log(params);
-                    return qs.stringify(params, { indices: false });
-                  },
-
-                  config,
-                })
-                .then((res) => {
-                  console.log("Multi search returns:");
-                  // console.log(res.data[0]);
-                  // var tempfound = [];
-                  res.data.forEach((data, i) => {
-                    var json = data;
-                    json = json.replaceAll("'", "");
-                    json = json.split("output_urls");
-                    json = json[1].slice(4);
-                    json = json.slice(0, -4);
-                    json = "[" + json + "]";
-                    // console.log("json replaced : %o", json);
-                    json = JSON.parse(json);
-                    // console.log("json parsed : %o", json);
-
-                    json.forEach((output, index) => {
-                      found2.push({
-                        image: output.worldviewurl,
-                        id:
-                          "img-" +
-                          (index + 2) +
-                          Math.random().toString(36).substr(2, 9),
-                        content: output.BBOX,
-                        embeddings: output.embedding,
-                        dimension: resolution,
-                        distance: output.distance,
-                      });
-                      dist2.push(output.distance);
-                    });
-                  });
-
-                  let floatCoordinates = found2.map((item) => {
-                    let newItem = item.content;
-                    newItem = newItem.split(",");
-                    newItem = newItem.map((element) => {
-                      return parseFloat(element);
-                    });
-                    return newItem;
-                  });
-
-                  // base coord: bottom left , top right
-                  // vertical lines are longitude
-                  // 0th and 2nd indexes are longtidude
-                  // console.log("Base Contents:", this.state.baseCoordinates);
-                  // console.log("Float Contents:  ", floatCoordinates);
-                  let diffList = [];
-                  let condensedlist = [];
-                  floatCoordinates.forEach((item) => {
-                    //get the diff bw this image and search item image
-                    diffList.push(
-                      (this.distance(
-                        item[1],
-                        item[0],
-                        this.state.baseCoordinates[1],
-                        this.state.baseCoordinates[0]
-                      ) +
-                        this.distance(
-                          item[3],
-                          item[2],
-                          this.state.baseCoordinates[3],
-                          this.state.baseCoordinates[2]
-                        )) /
-                        2
-                    );
-                    // condense the coordinates of this image into 2 coordinates, to be able to view it on map using marker
-                    let bottom = (item[0] + item[2]) / 2;
-                    let top = (item[1] + item[3]) / 2;
-                    condensedlist.push(
-                      "&s=" + String(top) + "," + String(bottom)
-                    );
-                    // console.log("coord is :", coord);
-                  });
-                  // console.log("Found Items: ", found2);
-                  let newfound = [];
-                  found2.forEach((item, index) => {
-                    //adding the condensed location to found2 items, is also added to nearby in newfo1und.push
-                    let time = new URLSearchParams(item.image).get("TIME");
-                    // item.searchlocation =
-                    //   urlprefix + zoomlevel + time + condensedlist[index];
-                    newfound.push({
-                      image: item.image,
-                      id: item.id,
-                      content: item.content,
-                      embeddings: item.embeddings,
-                      dimension: item.dimension,
-                      distance: diffList[index],
-                      searchlocation:
-                        urlprefix + "&t=" + time + condensedlist[index],
-                    });
-                    //mapping the id of this image to its search location (for map view feature)
-                    searchmap[item.id] =
-                      urlprefix + "&t=" + time + condensedlist[index];
-                  });
-                  // console.log("Diff List: ", diffList);
-                  // console.log("New Found: ", newfo1und);
-                  diffList.sort(function (a, b) {
-                    return a - b;
-                  });
-                  let nearby = diffList.slice(0, 5);
-                  let nearbyitems = [];
-                  newfound.forEach((item) => {
-                    nearby.forEach((element) => {
-                      if (element === item.distance) nearbyitems.push(item);
-                    });
-                  });
-
-                  // console.log("FOund Items:", found2);
-                  // console.log("Nearby Items:", nearbyitems);
-                  console.log("distance2: ", dist2);
-                  // sort found 1 and found 2 as per embedding distance and reset founditems
-                  let sorted = this.merge(this.state.founditems, found2);
-                  this.setState(
-                    {
-                      founditems: sorted.slice(0, 10),
-                      loaded: true,
-                      // nearbyitems: nearbyitems,
-                    },
-                    () => {
-                      // console.log("serach ends with 1024!");
-                      //api call for 2048 reso
-                      axios
-                        .post(searchurl, qs.stringify(body), {
-                          params: {
-                            resolutions: res3,
-                            bound_box: 0,
-                            model_name: 0,
-                            ann_lib: 0,
-                            return_items: 10,
-                            products: "viirs",
-                            inputurls: inputurls,
-                            training_type: this.state.searchitems[0].training,
-                          },
-                          paramsSerializer: (params) => {
-                            console.log("multisearch sending:");
-                            console.log(params);
-                            return qs.stringify(params, { indices: false });
-                          },
-
-                          config,
-                        })
-                        .then((res) => {
-                          console.log("Multi search returns:");
-                          // console.log(res.data[0]);
-                          // var tempfound = [];
-                          res.data.forEach((data, i) => {
-                            var json = data;
-                            json = json.replaceAll("'", "");
-                            json = json.split("output_urls");
-                            json = json[1].slice(4);
-                            json = json.slice(0, -4);
-                            json = "[" + json + "]";
-                            // console.log("json replaced : %o", json);
-                            json = JSON.parse(json);
-                            // console.log("json parsed : %o", json);
-
-                            json.forEach((output, index) => {
-                              found3.push({
-                                image: output.worldviewurl,
-                                id:
-                                  "item-" +
-                                  (index + 2) +
-                                  Math.random().toString(36).substr(2, 9),
-                                content: output.BBOX,
-                                embeddings: output.embedding,
-                                dimension: resolution,
-                                distance: output.distance,
-                              });
-                              dist3.push(output.distance);
-                            });
-                          });
-
-                          let floatCoordinates = found3.map((item) => {
-                            let newItem = item.content;
-                            newItem = newItem.split(",");
-                            newItem = newItem.map((element) => {
-                              return parseFloat(element);
-                            });
-                            return newItem;
-                          });
-
-                          // base coord: bottom left , top right
-                          // vertical lines are longitude
-                          // 0th and 2nd indexes are longtidude
-                          // console.log("Base Contents:", this.state.baseCoordinates);
-                          // console.log("Float Contents:  ", floatCoordinates);
-                          let diffList = [];
-                          let condensedlist = [];
-                          floatCoordinates.forEach((item) => {
-                            //get the diff bw this image and search item image
-                            diffList.push(
-                              (this.distance(
-                                item[1],
-                                item[0],
-                                this.state.baseCoordinates[1],
-                                this.state.baseCoordinates[0]
-                              ) +
-                                this.distance(
-                                  item[3],
-                                  item[2],
-                                  this.state.baseCoordinates[3],
-                                  this.state.baseCoordinates[2]
-                                )) /
-                                2
-                            );
-                            // condense the coordinates of this image into 2 coordinates, to be able to view it on map using marker
-                            let bottom = (item[0] + item[2]) / 2;
-                            let top = (item[1] + item[3]) / 2;
-                            condensedlist.push(
-                              "&s=" + String(top) + "," + String(bottom)
-                            );
-                            // console.log("coord is :", coord);
-                          });
-                          // console.log("Found Items: ", found3);
-                          let newfound = [];
-                          found3.forEach((item, index) => {
-                            //adding the condensed location to found3 items, is also added to nearby in newfo1und.push
-                            let time = new URLSearchParams(item.image).get(
-                              "TIME"
-                            );
-                            // item.searchlocation =
-                            //   urlprefix +
-                            //   zoomlevel +
-                            //   time +
-                            //   condensedlist[index];
-                            newfound.push({
-                              image: item.image,
-                              id: item.id,
-                              content: item.content,
-                              embeddings: item.embeddings,
-                              dimension: item.dimension,
-                              distance: diffList[index],
-                              // searchlocation:
-                              //   urlprefix +
-                              //   zoomlevel +
-                              //   time +
-                              //   condensedlist[index],
-                            });
-                            //mapping the id of this image to its search location (for map view feature)
-                            searchmap[item.id] =
-                              urlprefix + "&t=" + time + condensedlist[index];
-                          });
-                          // console.log("Diff List: ", diffList);
-                          // console.log("New Found: ", newfo1und);
-                          diffList.sort(function (a, b) {
-                            return a - b;
-                          });
-                          let nearby = diffList.slice(0, 5);
-                          let nearbyitems = [];
-                          newfound.forEach((item) => {
-                            nearby.forEach((element) => {
-                              if (element === item.distance)
-                                nearbyitems.push(item);
-                            });
-                          });
-                          let sorted = this.merge(
-                            this.state.founditems,
-                            found3
-                          );
-                          console.log("distance: ", dist3);
-                          this.setState(
-                            {
-                              founditems: sorted.slice(0, 10),
-                              searchmap: searchmap,
-                              showview: true,
-                              loaded: true,
-                            },
-                            () => {
-                              console.log(
-                                "last found: ",
-                                this.state.founditems
-                              );
-                              console.log("search map: ", this.state.searchmap);
-                            }
-                          );
-                        })
-                        .catch((err) => {
-                          if (err.response) {
-                            console.log("error response:");
-                            console.log(err.response);
-                          } else if (err.request) {
-                            console.log("error request:");
-                            console.log(err.request);
-                          } else {
-                            console.log("error:");
-                            console.log(err);
-                          }
-
-                          // this.refinesearch();
-                        });
-                    }
-                  );
-                })
-                .catch((err) => {
-                  if (err.response) {
-                    console.log("error response:");
-                    console.log(err.response);
-                  } else if (err.request) {
-                    console.log("error request:");
-                    console.log(err.request);
-                  } else {
-                    console.log("error:");
-                    console.log(err);
-                  }
-
-                  // this.refinesearch();
-                });
-            }
+            () => console.log("founditems: ", this.state.founditems)
           );
         })
         .catch((err) => {
@@ -1066,40 +697,13 @@ class Foreground extends React.Component {
 
           this.refinesearch();
         });
-
-      //display 512 results for now
-      // this.setState({
-      //   founditems: found1,
-      //   // nearbyitems: nearbyitems,
-      //   loaded: null,
-      // });
-
-      // // sort found 1 and found 2 as per embedding distance and reset founditems
-      // let sorted = this.merge(this.state.founditems, found2);
-      // this.setState({
-      //   founditems: found2,
-      //   loaded: null,
-      // });
-
-      // sorted = [];
-      // api call for 2048
-
-      //end api calls
-
-      //sort found1,found2,found3  and pass result to founditems
-      // console.log("found2: ", found2);
-      // this.setState({
-      //   founditems: found1,
-      //   // nearbyitems: nearbyitems,
-      //   loaded: null,
-      // });
     } else {
       // multiple embeddings search here we go!
       // let zoomlevel =
       //   "&v=-166.02834055119263,-88.04645825821608,207.31713381220345,87.44535976936983+&t=";
       var resolution = this.state.searchitems[0].dimension;
       resolution = parseInt(resolution);
-
+      let searchmap = [];
       // construct the body -> combine embeddings of all searchitems
       var embeddings = "";
       this.state.searchitems.forEach((item, index) => {
@@ -1150,7 +754,7 @@ class Foreground extends React.Component {
           body,
           {
             params: {
-              resolutions: resolution,
+              resolutions: 512,
               bound_box: 0,
               model_name: 0,
               ann_lib: 0,
@@ -1168,7 +772,8 @@ class Foreground extends React.Component {
         .then((res) => {
           console.log("embeddings search response");
           console.log(res.data);
-          var found = [];
+          var found1 = [];
+          let condensedlist = [];
           var json = res.data;
           json = json.replaceAll("'", "");
 
@@ -1185,88 +790,37 @@ class Foreground extends React.Component {
             console.log(string);
             string.forEach((output, index) => {
               console.log();
-              found.push({
+              found1.push({
                 image: output.worldviewurl,
-                id: "item-" + (index + 2),
+                id:
+                  "img-" +
+                  (index + 2) +
+                  Math.random().toString(36).substr(2, 9),
                 content: new URLSearchParams(output.worldviewurl).get("BBOX"),
                 embeddings: output.embedding,
                 dimension: resolution,
               });
+              // condense the coordinates of this particular image into 2 coordinates, to be able to view it on map using marker
+              let coordinates = found1[index].content.split(",");
+              let bottom =
+                (parseFloat(coordinates[0]) + parseFloat(coordinates[2])) / 2;
+              let top =
+                (parseFloat(coordinates[1]) + parseFloat(coordinates[3])) / 2;
+              condensedlist.push("&s=" + String(top) + "," + String(bottom));
+              console.log("coord is :", coordinates);
+              //adding the condensed values and the time to our search map for the view on map feature, by mapping id of found1[idx] (current image) to location
+              let time = new URLSearchParams(found1[index].image).get("TIME");
+              searchmap[found1[index].id] =
+                urlprefix + zoomlevel + "&t=" + time + condensedlist[index];
             });
-          });
-          let floatCoordinates = found.map((item) => {
-            let newItem = item.content;
-            newItem = newItem.split(",");
-            newItem = newItem.map((element) => {
-              return parseFloat(element);
-            });
-            return newItem;
           });
 
-          // base coord: bottom left , top right
-          // vertical lines are longitude
-          // 0th and 2nd indexes are longtidude
-          // console.log("Base Contents:", this.state.baseCoordinates);
-          // console.log("Float Contents:  ", floatCoordinates);
-          let diffList = [];
-          let condensedlist = [];
-          floatCoordinates.forEach((item) => {
-            diffList.push(
-              (this.distance(
-                item[1],
-                item[0],
-                this.state.baseCoordinates[1],
-                this.state.baseCoordinates[0]
-              ) +
-                this.distance(
-                  item[3],
-                  item[2],
-                  this.state.baseCoordinates[1],
-                  this.state.baseCoordinates[0]
-                )) /
-                2
-            );
-            // condense the coordinates of this image into 2 coordinates, to be able to view it on map using marker
-            let bottom = (item[0] + item[2]) / 2;
-            let top = (item[1] + item[3]) / 2;
-            condensedlist.push("&s=" + String(top) + "," + String(bottom));
-            // console.log("coord is :", coord);
-          });
-          console.log("Found Items: ", found);
-          let newfound = [];
-          found.forEach((item, index) => {
-            //adding the condensed location to found items, is also added to nearby in newfound.push
-            let time = new URLSearchParams(item.image).get("TIME");
-            item.searchlocation =
-              urlprefix + zoomlevel + time + condensedlist[index];
-            newfound.push({
-              image: item.image,
-              id: item.id,
-              content: item.content,
-              embeddings: item.embeddings,
-              dimension: item.dimension,
-              distance: diffList[index],
-              searchlocation:
-                urlprefix + zoomlevel + time + condensedlist[index],
-            });
-          });
-          // console.log("Diff List: ", diffList);
-          // console.log("New Found: ", newfound);
-          diffList.sort(function (a, b) {
-            return a - b;
-          });
-          let nearby = diffList.slice(0, 5);
-          let nearbyitems = [];
-          newfound.forEach((item) => {
-            nearby.forEach((element) => {
-              if (element === item.distance) nearbyitems.push(item);
-            });
-          });
-          console.log("Multi seach found: ", found);
+          console.log("Multi seach found: ", found1);
           this.setState(
             {
-              founditems: found,
-              nearbyitems: nearbyitems,
+              founditems: found1,
+              showview: true,
+              searchmap: searchmap,
               loaded: true,
             },
             console.log(this.state.founditems)
@@ -1309,29 +863,10 @@ class Foreground extends React.Component {
               <MdClose />
             </div>
           </div>
-          <div
-            className="refinebar"
-            id="search"
-            style={{
-              display: this.state.searchitems.length > 0 ? "block" : "none",
-            }}
-          >
-            <div
-              id="refinebutton"
-              className={this.state.loaded == false ? "activebutton" : null}
-              onClick={this.startsearch}
-            >
-              {this.state.founditems.length > 0 ? (
-                <MdYoutubeSearchedFor />
-              ) : (
-                <MdSearch />
-              )}
-              &nbsp;Search
-            </div>
-          </div>
+
           <DragDropContext onDragEnd={this.onDragEnd}>
             <div className="search-container">
-              <h2>
+              <h2 style={{ width: "773px", textAlign: "left" }}>
                 <MdGrade /> Search input: <b>{this.state.searchitems.length}</b>
               </h2>
               <div className="droppable-search">
@@ -1364,23 +899,15 @@ class Foreground extends React.Component {
                 </Droppable>
               </div>
             </div>
-            {/* <div
+
+            <div
               className="refinebar"
               id="search"
               style={{
                 display: this.state.searchitems.length > 0 ? "block" : "none",
               }}
-            > */}
-            {/* <div className="date-wrapper">
-                <DateRangePicker
-                  onChange={this.dateChange}
-                  value={this.state.daterange}
-                  minDate={min}
-                  maxDate={max}
-                />
-                
-              </div> */}
-            {/* <div
+            >
+              <div
                 id="refinebutton"
                 className={this.state.loaded == false ? "activebutton" : null}
                 onClick={this.startsearch}
@@ -1391,24 +918,32 @@ class Foreground extends React.Component {
                   <MdSearch />
                 )}
                 &nbsp;Search
-              </div> */}
-            {/* {this.state.founditems.length > 0 ? (
-                <div id="refineprompt">
-                  <p>
-                    <HiOutlineSwitchVertical /> <b>Refine your search</b> by
-                    moving found images to the search input.
-                  </p>
-                </div>
-              ) : null}
-            </div> */}
+              </div>
+            </div>
             <div className="found-container">
-              <h2
-                style={{
-                  display: this.state.nearbyclicked ? "none" : "block",
-                }}
-              >
-                <MdImage /> Found Similar images: {this.state.founditems.length}
-              </h2>
+              {this.state.founditems.length > 0 ? (
+                <h2
+                  style={{
+                    display: this.state.nearbyclicked ? "none" : "block",
+                    width: "773px",
+                    textAlign: "left",
+                  }}
+                >
+                  <MdImage /> Showing first {this.state.founditems.length}{" "}
+                  results
+                </h2>
+              ) : (
+                <h2
+                  style={{
+                    display: this.state.nearbyclicked ? "none" : "block",
+                    width: "773px",
+                    textAlign: "left",
+                  }}
+                >
+                  <MdImage /> Click search!
+                </h2>
+              )}
+
               <h2
                 style={{
                   display: this.state.nearbyclicked ? "block" : "none",
@@ -1470,7 +1005,7 @@ class Foreground extends React.Component {
                           }
                         />
                       ))}
-                      {/* {provided.placeholder}
+                      {provided.placeholder}
                       {this.state.founditems.length < 1 && this.state.loaded ? (
                         <div className="loader">
                           <p>
@@ -1479,7 +1014,7 @@ class Foreground extends React.Component {
                             <br /> The results will show up here.
                           </p>
                         </div>
-                      ) : null} */}
+                      ) : null}
 
                       {this.state.loaded ? null : (
                         <div className="loader">

@@ -6,7 +6,7 @@ import Iframe from "react-iframe";
 import { MdGrade, MdDelete } from "react-icons/md";
 import { BiMap } from "react-icons/bi";
 import { Fade } from "react-awesome-reveal";
-
+import ReactModal from "react-modal";
 import Img from "react-image";
 
 const getItemStyle = (isDragging, draggableStyle) => ({
@@ -17,14 +17,47 @@ const getItemStyle = (isDragging, draggableStyle) => ({
 });
 
 const dialogStyle = {
+  minHeight: "400px",
+  position: "fixed",
+  top: "30%",
+  left: "50%",
+};
+
+const frameStyle = {
   minHeight: "600px",
+  width: "800px",
   position: "fixed",
   top: "30%",
   left: "50%",
 };
 
 class Card extends React.Component {
-  state = {};
+  constructor(props) {
+    super(props);
+    this.state = {
+      modalOpen: false,
+    };
+    //bind fns
+    this.openModal = this.openModal.bind(this);
+    this.closeModal = this.closeModal.bind(this);
+  }
+
+  openModal() {
+    this.setState({
+      modalOpen: true,
+    });
+  }
+
+  // afterOpenModal() {
+  //   // references are now sync'd and can be accessed.
+  //   subtitle.style.color = '#f00';
+  // }
+
+  closeModal() {
+    this.setState({
+      modalOpen: false,
+    });
+  }
 
   moveinfo() {
     var item = {
@@ -58,23 +91,31 @@ class Card extends React.Component {
                 <div
                   className="discardButton button"
                   onClick={() => this.simpleDialog.show()}
+                  // onClick={() => this.openModal()}
                 >
                   <BiMap />
                   View
                 </div>
                 <SkyLight
-                  dialogStyles={dialogStyle}
+                  dialogStyles={frameStyle}
                   hideOnOverlayClicked
                   ref={(ref) => (this.simpleDialog = ref)}
                   title="Image Location"
                 >
+                  {/* <ReactModal
+                  isOpen={this.state.modalOpen}
+                  // onAfterOpen={afterOpenModal}
+                  // onRequestClose={this.closeModal}
+                  // style={customStyles}
+                  contentLabel="Example Modal"
+                > */}
                   {this.props.searchlocation ? (
                     <Iframe
                       url={
                         // "https://worldview.earthdata.nasa.gov/" +
                         this.props.searchlocation
                       }
-                      width="500px"
+                      width="700px"
                       height="600px"
                       id="myId"
                       // className="frame-style"
@@ -83,8 +124,13 @@ class Card extends React.Component {
                       loading="lazy"
                     />
                   ) : (
+                    // <>
+                    //   <button onClick={this.closeModal()}>close</button>
+                    //   <h2>TESTING MODAL!!!!</h2>
+                    // </>
                     <p> Please wait for search to complete!</p>
                   )}
+                  {/* </ReactModal> */}
                 </SkyLight>
               </div>
             ) : null}
