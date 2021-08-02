@@ -58,6 +58,7 @@ function closest(needle, haystack) {
  * Moves an item from one list to another list.
  */
 const move = (source, destination, droppableSource, droppableDestination) => {
+  console.log("Move invoked!");
   const sourceClone = Array.from(source);
   const destClone = Array.from(destination);
   const [removed] = sourceClone.splice(droppableSource.index, 1);
@@ -122,7 +123,7 @@ class Foreground extends React.Component {
       launch: true,
       searchitems: [],
       founditems: [],
-      nearbyitems: [],
+      // nearbyitems: [],
       rejectitems: [],
       clickeditem: [],
       found1: [],
@@ -130,7 +131,7 @@ class Foreground extends React.Component {
       found3: [],
       searchmap: {},
       screenshot: "",
-      nearbyclicked: false,
+      // nearbyclicked: false,
       firstrun: false,
       loaded: false,
       viewdate: false,
@@ -200,13 +201,10 @@ class Foreground extends React.Component {
         source.index,
         destination.index
       );
-
       let state = { items };
-
       if (source.droppableId === "droppable2") {
         state = { selected: items };
       }
-
       this.setState(state);
     } else {
       const result = move(
@@ -360,9 +358,14 @@ class Foreground extends React.Component {
       },
     ];
 
-    this.setState({
-      searchitems: searchdata,
-    });
+    this.setState(
+      {
+        searchitems: searchdata,
+      },
+      () => {
+        this.startsearch();
+      }
+    );
   }
 
   startsearch() {
@@ -388,6 +391,7 @@ class Foreground extends React.Component {
 
   close() {
     this.setState({
+      show: false,
       showres: false,
       founditems: [],
       searchitems: [],
@@ -397,6 +401,16 @@ class Foreground extends React.Component {
   componentDidMount() {
     console.log("component mounted");
     var wvbutton = document.getElementById("wv-image-button");
+
+    var outside = document.getElementsByClassName("ol-viewport")[0];
+    console.dir(outside);
+    outside.onclick = () => {
+      console.log("outside click!");
+      this.close();
+    };
+    // outside.onClick(() => {
+    //   console.log("outside click!");
+    // });
 
     if (wvbutton) {
       console.log("found wv button");
@@ -435,42 +449,21 @@ class Foreground extends React.Component {
     });
   }
 
-  discard(data) {
-    console.log("discard");
+  discard(data, val) {
+    console.log(`discard: ${val}`);
     console.log(data.source.index);
-    var newsearch = this.state.searchitems;
-    newsearch.splice(data.source.index, 1);
-
-    this.setState({
-      searchitems: newsearch,
-    });
-  }
-
-  //Utility function for calculating coordinate distance
-  distance(lat1, lon1, lat2, lon2, unit) {
-    if (lat1 == lat2 && lon1 == lon2) {
-      return 0;
-    } else {
-      var radlat1 = (Math.PI * lat1) / 180;
-      var radlat2 = (Math.PI * lat2) / 180;
-      var theta = lon1 - lon2;
-      var radtheta = (Math.PI * theta) / 180;
-      var dist =
-        Math.sin(radlat1) * Math.sin(radlat2) +
-        Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-      if (dist > 1) {
-        dist = 1;
-      }
-      dist = Math.acos(dist);
-      dist = (dist * 180) / Math.PI;
-      dist = dist * 60 * 1.1515;
-      if (unit == "K") {
-        dist = dist * 1.609344;
-      }
-      if (unit == "N") {
-        dist = dist * 0.8684;
-      }
-      return dist;
+    if (val === 1) {
+      var newsearch = this.state.searchitems;
+      newsearch.splice(data.source.index, 1);
+      this.setState({
+        searchitems: newsearch,
+      });
+    } else if (val === 2) {
+      var newfound = this.state.founditems;
+      newfound.splice(data.source.index, 1);
+      this.setState({
+        founditems: newfound,
+      });
     }
   }
 
@@ -511,38 +504,6 @@ class Foreground extends React.Component {
     }
 
     return merged;
-  }
-
-  /**
-   * Utility function to calculate viewport distance
-   */
-  getViewport(
-    x_w,
-    y_w,
-    x_wmax,
-    y_wmax,
-    x_wmin,
-    y_wmin,
-    x_vmax,
-    y_vmax,
-    x_vmin,
-    y_vmin
-  ) {
-    // point on viewport
-    let x_v, y_v;
-
-    // scaling factors for x coordinate and y coordinate
-    let sx, sy;
-
-    // calculating Sx and Sy
-    sx = (x_vmax - x_vmin) / (x_wmax - x_wmin);
-    sy = (y_vmax - y_vmin) / (y_wmax - y_wmin);
-
-    // calculating the point on viewport
-    x_v = x_vmin + (x_w - x_wmin) * sx;
-    y_v = y_vmin + (y_w - y_wmin) * sy;
-
-    document.write("The point on viewport: (" + x_v + ", " + y_v + " )<br>");
   }
 
   /**
@@ -834,8 +795,22 @@ class Foreground extends React.Component {
     }
   }
 
+  sideScroll() {
+    console.log("reached fn!");
+    // let element = HTMLDivElement;
+    // let scrollAmount = 0;
+    // const slideTimer = setInterval(() => {
+    //   element.scrollLeft += step;
+    //   scrollAmount += Math.abs(step);
+    //   if (scrollAmount >= distance) {
+    //     clearInterval(slideTimer);
+    //   }
+    // }, speed);
+  }
+
   render() {
     // console.log("clicked item= ", this.state.clickeditem.content);
+
     return (
       <div
         id="popup-cover"
@@ -847,7 +822,13 @@ class Foreground extends React.Component {
           id="searchprompt"
           style={{ display: this.state.showbuttons ? "block" : "none" }}
         >
-          <button id="searchpromptbutton" onClick={this.showSearchBox}>
+          <button
+            id="searchpromptbutton"
+            onClick={() => {
+              this.showSearchBox();
+              // this.startsearch();
+            }}
+          >
             <IoEarth /> WorldView Similarity Search
           </button>
         </div>
@@ -866,7 +847,7 @@ class Foreground extends React.Component {
 
           <DragDropContext onDragEnd={this.onDragEnd}>
             <div className="search-container">
-              <h2 style={{ width: "773px", textAlign: "left" }}>
+              <h2 style={{ width: "674px", textAlign: "left" }}>
                 <MdGrade /> Search input: <b>{this.state.searchitems.length}</b>
               </h2>
               <div className="droppable-search">
@@ -925,7 +906,7 @@ class Foreground extends React.Component {
                 <h2
                   style={{
                     display: this.state.nearbyclicked ? "none" : "block",
-                    width: "773px",
+                    width: "674px",
                     textAlign: "left",
                   }}
                 >
@@ -936,39 +917,16 @@ class Foreground extends React.Component {
                 <h2
                   style={{
                     display: this.state.nearbyclicked ? "none" : "block",
-                    width: "773px",
+                    width: "674px",
                     textAlign: "left",
                   }}
                 >
                   <MdImage /> Click search!
                 </h2>
               )}
-
-              <h2
-                style={{
-                  display: this.state.nearbyclicked ? "block" : "none",
-                }}
-              >
-                <MdImage /> Found Nearby images: {this.state.nearbyitems.length}
-              </h2>
-              {/* <button
-                className="nearby-btn"
-                style={{
-                  display: this.state.nearbyclicked ? "none" : "block",
-                }}
-                onClick={() => this.setState({ nearbyclicked: true })}
-              >
-                View Nearby Items
-              </button> */}
-              <button
-                className="nearby-btn"
-                style={{
-                  display: this.state.nearbyclicked ? "block" : "none",
-                }}
-                onClick={() => this.setState({ nearbyclicked: false })}
-              >
-                View All Items
-              </button>
+              {/* <div>
+                <button onclick={() => this.sideScroll()}>Scroll right</button>
+              </div> */}
               <div
                 className="droppable"
                 style={{
@@ -1005,6 +963,7 @@ class Foreground extends React.Component {
                           }
                         />
                       ))}
+
                       {provided.placeholder}
                       {this.state.founditems.length < 1 && this.state.loaded ? (
                         <div className="loader">
@@ -1017,79 +976,7 @@ class Foreground extends React.Component {
                       ) : null}
 
                       {this.state.loaded ? null : (
-                        <div className="loader">
-                          <Ring color="white" />
-                          <p>
-                            Searching... Using {this.state.searchitems.length}{" "}
-                            image(s).
-                          </p>
-                          <br />
-                          <br />
-                          <p>
-                            <TextLoop
-                              children={[
-                                "Creating embeddings...",
-                                "Indexing the planet...",
-                                "Configuring models...",
-                                "Optimizing search area...",
-                                "Searching for similarities...",
-                              ]}
-                            />
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </Droppable>
-              </div>
-              <div
-                className="droppable"
-                style={{
-                  display: this.state.nearbyclicked ? "block" : "none",
-                }}
-              >
-                <Droppable droppableId="droppable2" direction="horizontal">
-                  {(provided, snapshot) => (
-                    <div
-                      className="droppablecont"
-                      ref={provided.innerRef}
-                      style={getFoundListStyle(snapshot.isDraggingOver)}
-                    >
-                      {this.state.nearbyitems.map((item, index) => (
-                        <Card
-                          imgstyle="output-img"
-                          itemprop={item}
-                          clickFunction={this.cardClick}
-                          keyprop={item.id}
-                          idprop={item.id}
-                          indexprop={index}
-                          image={item.image}
-                          droppable={"droppable2"}
-                          movetosearchfunction={this.moveToSearch}
-                          discardfunction={this.discard}
-                          hasmovetosearch={true}
-                          showview={this.state.showview}
-                          searchlocation={
-                            this.state.showview
-                              ? "https://worldview.earthdata.nasa.gov/" +
-                                this.state.searchmap[item.id]
-                              : null
-                          }
-                        />
-                      ))}
-                      {provided.placeholder}
-                      {this.state.founditems.length < 1 && this.state.loaded ? (
-                        <div className="loader">
-                          <p>
-                            Press the search button above to
-                            <br /> perform a similarity search. <br />
-                            <br /> The results will show up here.
-                          </p>
-                        </div>
-                      ) : null}
-
-                      {this.state.loaded ? null : (
-                        <div className="loader">
+                        <div className="loader2">
                           <Ring color="white" />
                           <p>
                             Searching... Using {this.state.searchitems.length}{" "}
@@ -1126,7 +1013,6 @@ class Foreground extends React.Component {
         >
           {this.state.clickeditem.image ? (
             <div>
-              {/* <img src={this.state.screenshot}></img> */}
               <img
                 className="dialogImage"
                 src={this.state.clickeditem.image}

@@ -48,11 +48,6 @@ class Card extends React.Component {
     });
   }
 
-  // afterOpenModal() {
-  //   // references are now sync'd and can be accessed.
-  //   subtitle.style.color = '#f00';
-  // }
-
   closeModal() {
     this.setState({
       modalOpen: false,
@@ -91,7 +86,6 @@ class Card extends React.Component {
                 <div
                   className="discardButton button"
                   onClick={() => this.simpleDialog.show()}
-                  // onClick={() => this.openModal()}
                 >
                   <BiMap />
                   View
@@ -102,35 +96,24 @@ class Card extends React.Component {
                   ref={(ref) => (this.simpleDialog = ref)}
                   title="Image Location"
                 >
-                  {/* <ReactModal
-                  isOpen={this.state.modalOpen}
-                  // onAfterOpen={afterOpenModal}
-                  // onRequestClose={this.closeModal}
-                  // style={customStyles}
-                  contentLabel="Example Modal"
-                > */}
                   {this.props.searchlocation ? (
-                    <Iframe
-                      url={
-                        // "https://worldview.earthdata.nasa.gov/" +
-                        this.props.searchlocation
-                      }
-                      width="700px"
-                      height="600px"
-                      id="myId"
-                      // className="frame-style"
-                      display="initial"
-                      position="relative"
-                      loading="lazy"
-                    />
+                    // <Iframe
+                    //   url={
+                    //     // "https://worldview.earthdata.nasa.gov/" +
+                    //     this.props.searchlocation
+                    //   }
+                    //   width="700px"
+                    //   height="600px"
+                    //   id="myId"
+                    //   // className="frame-style"
+                    //   display="initial"
+                    //   position="relative"
+                    //   loading="lazy"
+                    // />
+                    <div>Hello World!</div>
                   ) : (
-                    // <>
-                    //   <button onClick={this.closeModal()}>close</button>
-                    //   <h2>TESTING MODAL!!!!</h2>
-                    // </>
                     <p> Please wait for search to complete!</p>
                   )}
-                  {/* </ReactModal> */}
                 </SkyLight>
               </div>
             ) : null}
@@ -139,10 +122,6 @@ class Card extends React.Component {
               onClick={() => this.props.clickFunction(this.props.itemprop)}
               src={this.props.image}
             ></img>
-            {/* <div className="cardDetails">
-        
-            </div> */}
-
             <div className="cardButtonbar">
               {this.props.hasmovetosearch ? (
                 <div
@@ -159,12 +138,21 @@ class Card extends React.Component {
                 </div>
               )}
 
-              <div
-                className="discardButton button"
-                onClick={() => this.props.discardfunction(this.moveinfo())}
-              >
-                <MdDelete /> discard
-              </div>
+              {this.props.showview ? (
+                <div
+                  className="discardButton button"
+                  onClick={() => this.props.discardfunction(this.moveinfo(), 2)}
+                >
+                  <MdDelete /> discard
+                </div>
+              ) : (
+                <div
+                  className="discardButton button"
+                  onClick={() => this.props.discardfunction(this.moveinfo(), 1)}
+                >
+                  <MdDelete /> discard
+                </div>
+              )}
             </div>
           </div>
         )}
