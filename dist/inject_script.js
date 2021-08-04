@@ -1,0 +1,1 @@
+if(null==document.getElementById("foreground")){var foreground_entry_point=document.createElement("div");let e=document.createElement("script");foreground_entry_point.id="foreground",foreground_entry_point.appendChild(e),console.log("appending foreground"),document.querySelector("body").appendChild(foreground_entry_point)}

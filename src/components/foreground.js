@@ -844,7 +844,6 @@ class Foreground extends React.Component {
               <MdClose />
             </div>
           </div>
-
           <DragDropContext onDragEnd={this.onDragEnd}>
             <div className="search-container">
               <h2 style={{ width: "674px", textAlign: "left" }}>
