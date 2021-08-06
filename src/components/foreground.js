@@ -1,7 +1,7 @@
 import React from "react";
 import SkyLight from "react-skylight";
 import Card from "./card.js";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import "./style.css";
 import logo from "./logo.png";
 import axios from "axios";
@@ -213,11 +213,12 @@ class Foreground extends React.Component {
         source,
         destination
       );
-
-      this.setState({
-        searchitems: result.droppable,
-        founditems: result.droppable2,
-      });
+      if (result.droppable) this.setState({ searchitems: result.droppable });
+      if (result.droppable2) this.setState({ founditems: result.droppable2 });
+      // this.setState({
+      //   searchitems: result.droppable,
+      //   founditems: result.droppable2,
+      // });
     }
 
     if (this.state.searchitems.length > 2) {
@@ -541,8 +542,8 @@ class Foreground extends React.Component {
     // let startdate = this.getFormattedDate(this.state.daterange[0]);
     // let enddate = this.getFormattedDate(this.state.daterange[1]);
 
-    let startdate = "08-15-2020";
-    let enddate = "08-15-2020";
+    let startdate = "08-16-2020";
+    let enddate = "08-16-2020";
 
     if (
       this.state.searchitems.length < 2 &&
@@ -596,15 +597,13 @@ class Foreground extends React.Component {
         .then((res) => {
           console.log("Multi search returns:");
           let condensedlist = [];
-          res.data.forEach((data, i) => {
-            var json = data;
-            json = json.replaceAll("'", "");
-            json = json.split("output_urls");
-            json = json[1].slice(4);
-            json = json.slice(0, -4);
-            json = "[" + json + "]";
+          res.data.forEach((d, i) => {
+            var json = d.replace("'", "");
             json = JSON.parse(json);
-            json.forEach((output, index) => {
+            var output_urls = json.output_urls;
+            output_urls = output_urls.replace(/'/g, "");
+            output_urls = JSON.parse(output_urls);
+            output_urls.forEach((output, index) => {
               found1.push({
                 image: output.worldviewurl,
                 id:
@@ -794,7 +793,6 @@ class Foreground extends React.Component {
         });
     }
   }
-
   sideScroll() {
     console.log("reached fn!");
     // let element = HTMLDivElement;
@@ -818,213 +816,229 @@ class Foreground extends React.Component {
           display: this.state.show ? "block" : "none",
         }}
       >
-        <div
-          id="searchprompt"
-          style={{ display: this.state.showbuttons ? "block" : "none" }}
-        >
-          <button
-            id="searchpromptbutton"
-            onClick={() => {
-              this.showSearchBox();
-              // this.startsearch();
-            }}
+        <div className="wrapper">
+          <div
+            id="searchprompt"
+            style={{ display: this.state.showbuttons ? "block" : "none" }}
           >
-            <IoEarth /> WorldView Similarity Search
-          </button>
-        </div>
-        <div
-          id="results"
-          style={{ display: this.state.showres ? "block" : "none" }}
-        >
-          <div className="topbar">
-            <p>
-              <IoEarth /> <b>WorldView</b> Similarity Search
-            </p>
-            <div id="closebutton" onClick={this.close}>
-              <MdClose />
-            </div>
-          </div>
-          <DragDropContext onDragEnd={this.onDragEnd}>
-            <div className="search-container">
-              <h2 style={{ width: "674px", textAlign: "left" }}>
-                <MdGrade /> Search input: <b>{this.state.searchitems.length}</b>
-              </h2>
-              <div className="droppable-search">
-                <Droppable droppableId="droppable" direction="horizontal">
-                  {(provided, snapshot) => (
-                    <div
-                      className="droppablecont"
-                      ref={provided.innerRef}
-                      style={getSearchListStyle(snapshot.isDraggingOver)}
-                    >
-                      {this.state.searchitems.map((item, index) => (
-                        <Card
-                          imgstyle="search-img"
-                          itemprop={item}
-                          clickFunction={this.cardClick}
-                          keyprop={item.id}
-                          idprop={item.id}
-                          indexprop={index}
-                          image={item.image}
-                          droppable={"droppable"}
-                          movetosearchfunction={this.moveToSearch}
-                          discardfunction={this.discard}
-                          hasmovetosearch={false}
-                          showview={false}
-                        />
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </div>
-            </div>
-
-            <div
-              className="refinebar"
-              id="search"
-              style={{
-                display: this.state.searchitems.length > 0 ? "block" : "none",
+            <button
+              id="searchpromptbutton"
+              onClick={() => {
+                this.showSearchBox();
+                // this.startsearch();
               }}
             >
-              <div
-                id="refinebutton"
-                className={this.state.loaded == false ? "activebutton" : null}
-                onClick={this.startsearch}
-              >
-                {this.state.founditems.length > 0 ? (
-                  <MdYoutubeSearchedFor />
-                ) : (
-                  <MdSearch />
-                )}
-                &nbsp;Search
+              <IoEarth /> WorldView Similarity Search
+            </button>
+          </div>
+          <div
+            id="results"
+            style={{ display: this.state.showres ? "block" : "none" }}
+          >
+            <div className="topbar">
+              <p>
+                <IoEarth /> <b>WorldView</b> Similarity Search
+              </p>
+              <div id="closebutton" onClick={this.close}>
+                <MdClose />
               </div>
             </div>
-            <div className="found-container">
-              {this.state.founditems.length > 0 ? (
-                <h2
-                  style={{
-                    display: this.state.nearbyclicked ? "none" : "block",
-                    width: "674px",
-                    textAlign: "left",
-                  }}
-                >
-                  <MdImage /> Showing first {this.state.founditems.length}{" "}
-                  results
+            <DragDropContext onDragEnd={this.onDragEnd}>
+              <div className="search-container">
+                <h2 style={{ width: "674px", textAlign: "left" }}>
+                  <MdGrade /> Search input:{" "}
+                  <b>{this.state.searchitems.length}</b>
                 </h2>
-              ) : (
-                <h2
-                  style={{
-                    display: this.state.nearbyclicked ? "none" : "block",
-                    width: "674px",
-                    textAlign: "left",
-                  }}
-                >
-                  <MdImage /> Click search!
-                </h2>
-              )}
-              {/* <div>
-                <button onclick={() => this.sideScroll()}>Scroll right</button>
-              </div> */}
+                <div className="droppable-search">
+                  <Droppable droppableId="droppable" direction="horizontal">
+                    {(provided, snapshot) => (
+                      <div
+                        className="droppablecont"
+                        ref={provided.innerRef}
+                        style={getSearchListStyle(snapshot.isDraggingOver)}
+                      >
+                        {this.state.searchitems.map((item, index) => (
+                          // <Draggable
+                          //   key={item.id}
+                          //   draggableId={item.id}
+                          //   index={index}
+                          // >
+                          <Card
+                            imgstyle="search-img"
+                            itemprop={item}
+                            clickFunction={this.cardClick}
+                            keyprop={item.id}
+                            idprop={item.id}
+                            indexprop={index}
+                            image={item.image}
+                            droppable={"droppable"}
+                            movetosearchfunction={this.moveToSearch}
+                            discardfunction={this.discard}
+                            hasmovetosearch={false}
+                            showview={false}
+                          />
+                          // </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </div>
+              </div>
+
               <div
-                className="droppable"
+                className="refinebar"
+                id="search"
                 style={{
-                  display: this.state.nearbyclicked ? "none" : "block",
+                  display: this.state.searchitems.length > 0 ? "block" : "none",
                 }}
               >
-                <Droppable droppableId="droppable2" direction="horizontal">
-                  {(provided, snapshot) => (
-                    <div
-                      className="droppablecont"
-                      ref={provided.innerRef}
-                      style={getFoundListStyle(snapshot.isDraggingOver)}
-                    >
-                      {this.state.founditems.map((item, index) => (
-                        <Card
-                          imgstyle="output-img"
-                          itemprop={item}
-                          clickFunction={this.cardClick}
-                          keyprop={item.id}
-                          idprop={item.id}
-                          indexprop={index}
-                          image={item.image}
-                          droppable={"droppable2"}
-                          movetosearchfunction={this.moveToSearch}
-                          discardfunction={this.discard}
-                          hasmovetosearch={true}
-                          showview={this.state.showview}
-                          // searchlocation={item.searchlocation}
-                          searchlocation={
-                            this.state.showview
-                              ? "https://worldview.earthdata.nasa.gov/" +
-                                this.state.searchmap[item.id]
-                              : null
-                          }
-                        />
-                      ))}
-
-                      {provided.placeholder}
-                      {this.state.founditems.length < 1 && this.state.loaded ? (
-                        <div className="loader">
-                          <p>
-                            Press the search button above to
-                            <br /> perform a similarity search. <br />
-                            <br /> The results will show up here.
-                          </p>
-                        </div>
-                      ) : null}
-
-                      {this.state.loaded ? null : (
-                        <div className="loader2">
-                          <Ring color="white" />
-                          <p>
-                            Searching... Using {this.state.searchitems.length}{" "}
-                            image(s).
-                          </p>
-                          <br />
-                          <br />
-                          <p>
-                            <TextLoop
-                              children={[
-                                "Creating embeddings...",
-                                "Indexing the planet...",
-                                "Configuring models...",
-                                "Optimizing search area...",
-                                "Searching for similarities...",
-                              ]}
-                            />
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                <div
+                  id="refinebutton"
+                  className={this.state.loaded == false ? "activebutton" : null}
+                  onClick={this.startsearch}
+                >
+                  {this.state.founditems.length > 0 ? (
+                    <MdYoutubeSearchedFor />
+                  ) : (
+                    <MdSearch />
                   )}
-                </Droppable>
+                  &nbsp;Search
+                </div>
               </div>
-            </div>
-          </DragDropContext>
-        </div>
+              <div className="found-container">
+                {this.state.founditems.length > 0 ? (
+                  <h2
+                    style={{
+                      display: this.state.nearbyclicked ? "none" : "block",
+                      width: "674px",
+                      textAlign: "left",
+                    }}
+                  >
+                    <MdImage /> Showing first {this.state.founditems.length}{" "}
+                    results
+                  </h2>
+                ) : (
+                  <h2
+                    style={{
+                      display: this.state.nearbyclicked ? "none" : "block",
+                      width: "674px",
+                      textAlign: "left",
+                    }}
+                  >
+                    <MdImage /> Click search!
+                  </h2>
+                )}
+                {/* <div>
+                <button onclick={() => this.sideScroll()}>Scroll right</button>
+              </div> */}
+                <div
+                  className="droppable"
+                  style={{
+                    display: this.state.nearbyclicked ? "none" : "block",
+                  }}
+                >
+                  <Droppable droppableId="droppable2" direction="horizontal">
+                    {(provided, snapshot) => (
+                      <div
+                        className="droppablecont"
+                        ref={provided.innerRef}
+                        style={getFoundListStyle(snapshot.isDraggingOver)}
+                      >
+                        {this.state.founditems.map((item, index) => (
+                          // <Draggable
+                          //   key={item.id}
+                          //   draggableId={item.id}
+                          //   index={index}
+                          // >
+                          <Card
+                            imgstyle="output-img"
+                            itemprop={item}
+                            clickFunction={this.cardClick}
+                            keyprop={item.id}
+                            idprop={item.id}
+                            indexprop={index}
+                            image={item.image}
+                            droppable={"droppable2"}
+                            movetosearchfunction={this.moveToSearch}
+                            discardfunction={this.discard}
+                            hasmovetosearch={true}
+                            showview={this.state.showview}
+                            // searchlocation={item.searchlocation}
+                            searchlocation={
+                              this.state.showview
+                                ? "https://worldview.earthdata.nasa.gov/" +
+                                  this.state.searchmap[item.id]
+                                : null
+                            }
+                          />
+                          // </Draggable>
+                        ))}
 
-        <SkyLight
-          dialogStyles={dialogStyle}
-          hideOnOverlayClicked
-          ref={(ref) => (this.simpleDialog = ref)}
-          title=""
-        >
-          {this.state.clickeditem.image ? (
-            <div>
-              <img
-                className="dialogImage"
-                src={this.state.clickeditem.image}
-              ></img>
-              <p>Location: {this.state.clickeditem.content}</p>
-              <p>
-                Download: <a href={this.state.clickeditem.image}>LINK</a>
-              </p>
-            </div>
-          ) : (
-            <p>nothing here</p>
-          )}
-        </SkyLight>
+                        {provided.placeholder}
+                        {this.state.founditems.length < 1 &&
+                        this.state.loaded ? (
+                          <div className="loader">
+                            <p>
+                              Press the search button above to
+                              <br /> perform a similarity search. <br />
+                              <br /> The results will show up here.
+                            </p>
+                          </div>
+                        ) : null}
+
+                        {this.state.loaded ? null : (
+                          <div className="loader2">
+                            <Ring color="white" />
+                            <p>
+                              Searching... Using {this.state.searchitems.length}{" "}
+                              image(s).
+                            </p>
+                            <br />
+                            <br />
+                            <p>
+                              <TextLoop
+                                children={[
+                                  "Creating embeddings...",
+                                  "Indexing the planet...",
+                                  "Configuring models...",
+                                  "Optimizing search area...",
+                                  "Searching for similarities...",
+                                ]}
+                              />
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </Droppable>
+                </div>
+              </div>
+            </DragDropContext>
+          </div>
+
+          <SkyLight
+            dialogStyles={dialogStyle}
+            hideOnOverlayClicked
+            ref={(ref) => (this.simpleDialog = ref)}
+            title=""
+          >
+            {this.state.clickeditem.image ? (
+              <div>
+                <img
+                  className="dialogImage"
+                  src={this.state.clickeditem.image}
+                ></img>
+                <p>Location: {this.state.clickeditem.content}</p>
+                <p>
+                  Download: <a href={this.state.clickeditem.image}>LINK</a>
+                </p>
+              </div>
+            ) : (
+              <p>nothing here</p>
+            )}
+          </SkyLight>
+        </div>
       </div>
     );
   }
