@@ -95,9 +95,6 @@ video {
   background-size: 10px 10px;
   /* overflow: auto; */
 }
-.wrapper {
-  /* height: 95vh; */
-}
 #popup-cover svg {
   margin-top: -4px;
 }
@@ -266,6 +263,7 @@ video {
   height: 230px; */
   width: 195px;
   height: 195px;
+  cursor: pointer;
 }
 
 .search-img {
@@ -273,6 +271,7 @@ video {
   height: 230px; */
   width: 195px;
   height: 195px;
+  cursor: pointer;
 }
 
 .droppable-search {

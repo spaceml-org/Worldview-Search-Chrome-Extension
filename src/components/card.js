@@ -137,7 +137,7 @@ class Card extends React.Component {
                   <MdGrade />
                 </div>
               )}
-
+              {/* {decides whether to discard from search or found container based on state of show view} */}
               {this.props.showview ? (
                 <div
                   className="discardButton button"
