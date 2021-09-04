@@ -1,4 +1,7 @@
 ﻿# Worldviewsearch Chrome Extension
+ 
+<ins> **What is it?** </ins>
+Well lets say you're trying to index images of the earth, and you want to find **similar images** to your input. That's exactly what this is for - a chrome extension built on react, that lets you take a snapshot of satelite images from NASA's worldview website, and lets you perform similarity searches on the same, which is returned back to you, in a neat and clean UI
 
 ## Developing:
 
