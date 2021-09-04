@@ -20,31 +20,27 @@ Well lets say you're trying to index images of the earth, and you want to find *
 - To get started you will need npm installed on your system
 - Clone the main branch of the repository
 - Extract all the files to a folder of your choice.
-- Bring up the terminal on the above folder and run 
-
-   1. `npm install`  
-   2. `npm run build:prod`
-   
 - Go to [chrome://extensions](chrome://extensions) in your chrome browser
 - Activate **"developer mode"** in right-hand corner
 - Click **"load unpacked"** button on left side
-- Point to the *dist* folder within the root folder 
+- Point to the *dist* folder within the unzipped folder 
 
 ### How To Use Worldviewsearch Chrome Extension
 Step 1) **Head over to [WorldView website](https://worldview.earthdata.nasa.gov/)** \
-In the layers option choose *Corrected Reflectance(True Colour)* and unselect the default selections
+In the layers option choose *Corrected Reflectance(True Colour)* and unselect the default selections\
 Move a day behind to begin using it
 
 Step 2) **Press the camera button on the worldview website** \
    Take a snapshot of the required region and then press the glowing *Worldview Similarity Search* button and you're good to go!
 
 ## Development:
+- Most of the code lives in `components/foreground.js`.
+- Bring up the terminal on the unzipped folder and run 
+   `npm install`  to get started
+- If you make changes use `npm run build:prod` to build, the finished build lands in `dist/`.
 
-Run `npm install` in the root folder to get started
 
-Most of the code lives in `components/foreground.js`.
-
-`npm run build:prod` to build the extension(make your changes live), the finished build lands in `dist/`.
+ 
 
 -------------
 ![Demo image of WorldView Similarity Search](assets/world_view_snap.png?raw=true "WorldView Similarity Search")
