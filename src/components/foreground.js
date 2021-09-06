@@ -1,9 +1,8 @@
 import React from "react";
 import SkyLight from "react-skylight";
 import Card from "./card.js";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import "./style.css";
-import logo from "./logo.png";
+
 import axios from "axios";
 import {
   MdSearch,
@@ -12,10 +11,8 @@ import {
   MdGrade,
   MdYoutubeSearchedFor,
 } from "react-icons/md";
-import { IoEarth } from "react-icons/io5";
-import { HiOutlineSwitchVertical } from "react-icons/hi";
+import { IoEarth, IoThumbsUpSharp } from "react-icons/io5";
 
-import qs from "qs";
 import { Ring } from "react-spinners-css";
 
 import TextLoop from "react-text-loop";
@@ -80,37 +77,6 @@ function minTwoDigits(n) {
   return (n < 10 ? "0" : "") + n;
 }
 
-/**
- Presets for date picker
- */
-const [min, max] = [new Date(2020, 7, 15), new Date(2020, 7, 24)];
-// const [value, onChange] = [new Date(2020, 8, 15), new Date(2020, 8, 24)];
-/**
- * Style for the search box
- */
-const getSearchListStyle = (isDraggingOver) => ({
-  // boxShadow: "inset 0px 0px 15px 0px rgba(0,0,0,0.55)",
-  // background: isDraggingOver ? "#F6B09C" : "#F9DAD2",
-  // padding: 8,
-  // width: "100%",
-  // overflowX: "scroll",
-  // borderCollapse: "separate",
-  // borderSpacing: 5,
-});
-
-/**
- * Style for the found box
- */
-const getFoundListStyle = (isDraggingOver) => ({
-  // boxShadow: "inset 0px 0px 15px 0px rgba(0,0,0,0.55)",
-  // background: isDraggingOver ? "#F7C257" : "#FCDC9D",
-  // padding: 8,
-  // width: "100%",
-  // overflowX: "scroll",
-  // borderCollapse: "separate",
-  // borderSpacing: 5,
-});
-
 class Foreground extends React.Component {
   constructor(props) {
     super(props);
@@ -138,6 +104,7 @@ class Foreground extends React.Component {
       showview: false,
       daterange: [new Date(2020, 7, 24), new Date(2020, 7, 24)],
       searchurl: "https://fdl-us-knowledge.ue.r.appspot.com/similarimages/",
+      encodedImg: "",
     };
 
     this.cardClick = this.cardClick.bind(this);
@@ -154,6 +121,7 @@ class Foreground extends React.Component {
     this.refinesearch = this.refinesearch.bind(this);
     this.startsearch = this.startsearch.bind(this);
     this.dateChange = this.dateChange.bind(this);
+    this.toDataURL = this.toDataURL.bind(this);
   }
 
   dateChange(range) {
@@ -172,62 +140,6 @@ class Foreground extends React.Component {
       clickeditem: param,
     });
   }
-
-  /**
-   * Points the items to the right droppables
-   */
-  id2List = {
-    droppable: "searchitems",
-    droppable2: "founditems",
-  };
-
-  getList = (id) => this.state[this.id2List[id]];
-
-  /**
-   * What happens when a card is dropped
-   */
-  onDragEnd = (result) => {
-    console.log(result);
-    const { source, destination } = result;
-
-    // dropped outside the list
-    if (!destination) {
-      return;
-    }
-
-    if (source.droppableId === destination.droppableId) {
-      const items = reorder(
-        this.getList(source.droppableId),
-        source.index,
-        destination.index
-      );
-      let state = { items };
-      if (source.droppableId === "droppable2") {
-        state = { selected: items };
-      }
-      this.setState(state);
-    } else {
-      const result = move(
-        this.getList(source.droppableId),
-        this.getList(destination.droppableId),
-        source,
-        destination
-      );
-      if (result.droppable) this.setState({ searchitems: result.droppable });
-      if (result.droppable2) this.setState({ founditems: result.droppable2 });
-      // this.setState({
-      //   searchitems: result.droppable,
-      //   founditems: result.droppable2,
-      // });
-    }
-
-    if (this.state.searchitems.length > 2) {
-      console.log("more than 2 in search");
-      this.setState({
-        showrefine: true,
-      });
-    }
-  };
 
   /**
    * Assign the worldview button to show the "search similar" button
@@ -370,9 +282,6 @@ class Foreground extends React.Component {
   }
 
   startsearch() {
-    // this.setState({
-    //   viewdate: true,
-    // });
     this.refinesearch();
   }
 
@@ -409,9 +318,6 @@ class Foreground extends React.Component {
       console.log("outside click!");
       this.close();
     };
-    // outside.onClick(() => {
-    //   console.log("outside click!");
-    // });
 
     if (wvbutton) {
       console.log("found wv button");
@@ -469,42 +375,21 @@ class Foreground extends React.Component {
   }
 
   /**
-   * Utility function to convert date obj to mm/dd/yyyy
+   * function to convert img to base64
    */
-  getFormattedDate(obj) {
-    var month = obj.getMonth() + 1;
-    var day = obj.getDate();
-    var year = obj.getFullYear();
-    return month + "-" + day + "-" + year;
-  }
 
-  //Utility function to merge two sorted lists based on embedding distance
-  merge(arr1, arr2) {
-    let merged = [];
-    let index1 = 0;
-    let index2 = 0;
-    let current = 0;
-
-    while (current < arr1.length + arr2.length) {
-      let isArr1Depleted = index1 >= arr1.length;
-      let isArr2Depleted = index2 >= arr2.length;
-
-      if (
-        !isArr1Depleted &&
-        (isArr2Depleted ||
-          parseFloat(arr1[index1].distance) < parseFloat(arr2[index2].distance))
-      ) {
-        merged[current] = arr1[index1];
-        index1++;
-      } else {
-        merged[current] = arr2[index2];
-        index2++;
-      }
-
-      current++;
-    }
-
-    return merged;
+  toDataURL(url, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+      var reader = new FileReader();
+      reader.onloadend = function () {
+        callback(reader.result);
+      };
+      reader.readAsDataURL(xhr.response);
+    };
+    xhr.open("GET", url);
+    xhr.responseType = "blob";
+    xhr.send();
   }
 
   /**
@@ -519,131 +404,83 @@ class Foreground extends React.Component {
 
     console.log("search items = ", this.state.searchitems);
 
-    const config_headers = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-
-      "Access-Control-Allow-Headers":
-        "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
-    };
-
-    const config = {
-      headers: config_headers,
-      timeout: 100000000,
-    };
-
     //setting url variables for view on map ( searchlocation )
     const urlprefix =
       "?l=Reference_Labels_15m(hidden),Reference_Features_15m(hidden),Coastlines_15m(hidden),VIIRS_NOAA20_CorrectedReflectance_TrueColor(hidden),VIIRS_SNPP_CorrectedReflectance_TrueColor,MODIS_Aqua_CorrectedReflectance_TrueColor(hidden),MODIS_Terra_CorrectedReflectance_TrueColor(hidden)&lg=true";
     const zoomlevel =
       "&v=-166.02834055119263,-88.04645825821608,207.31713381220345,87.44535976936983+&t=";
 
-    //setting varibles for start date and end date
-    // let startdate = this.getFormattedDate(this.state.daterange[0]);
-    // let enddate = this.getFormattedDate(this.state.daterange[1]);
+    // searching using the original image
+    var inputurls = this.state.searchitems.map((a) => a.image);
+    console.log(inputurls);
 
-    let startdate = "08-16-2020";
-    let enddate = "08-16-2020";
+    // converts the search image to base64
+    // post request to api made within context of this function as it returns a promise asynchronously
+    this.toDataURL(inputurls, (encoded) => {
+      var parent = this;
+      console.log(parent);
+      // console.log("raw encoded output: ", encoded);
+      encoded = encoded.substring(encoded.indexOf(",") + 1);
+      //setup for api call
+      var data = JSON.stringify({
+        image: encoded,
+        neighbors: 10,
+      });
 
-    if (
-      this.state.searchitems.length < 2 &&
-      this.state.searchitems[0].embeddings == null
-    ) {
-      // searching using the original image
-      var inputurls = this.state.searchitems.map((a) => a.image);
-      console.log(inputurls);
-
-      var resolution = this.state.searchitems[0].dimension;
-      resolution = parseInt(resolution);
-
-      var res1 = 512,
-        res2 = 1024,
-        res3 = 2048;
-
-      var body = {
-        startdate: startdate,
-        enddate: enddate,
+      var config = {
+        method: "post",
+        url: "https://d2cru4xfdgon7n.cloudfront.net/search",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers":
+            "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
+        },
+        data: data,
       };
-
-      var searchurl =
-        "https://fdl-us-knowledge.ue.r.appspot.com/similarimagesmultiple/";
-      console.log("Sending multi search POST");
-
       let found1 = [];
-      let dist1 = [];
-      let searchmap = {};
-
-      //api call for 512
-      axios
-        .post(searchurl, qs.stringify(body), {
-          params: {
-            resolutions: 512,
-            bound_box: 0,
-            model_name: 0,
-            ann_lib: 0,
-            return_items: 10,
-            products: "viirs",
-            inputurls: inputurls,
-            training_type: this.state.searchitems[0].training,
-          },
-          paramsSerializer: (params) => {
-            console.log("multisearch sending:");
-            console.log(params);
-            return qs.stringify(params, { indices: false });
-          },
-
-          config,
-        })
-        .then((res) => {
-          console.log("Multi search returns:");
-          let condensedlist = [];
-          res.data.forEach((d, i) => {
-            var json = d.replace("'", "");
-            json = JSON.parse(json);
-            var output_urls = json.output_urls;
-            output_urls = output_urls.replace(/'/g, "");
-            output_urls = JSON.parse(output_urls);
-            output_urls.forEach((output, index) => {
-              found1.push({
-                image: output.worldviewurl,
-                id:
-                  "img-" +
-                  (index + 2) +
-                  Math.random().toString(36).substr(2, 9),
-                content: output.BBOX,
-                embeddings: output.embedding,
-                dimension: resolution,
-                distance: output.distance,
-              });
-              dist1.push(output.distance);
-              // condense the coordinates of this particular image into 2 coordinates, to be able to view it on map using marker
-              let coordinates = found1[index].content.split(",");
-              let bottom =
-                (parseFloat(coordinates[0]) + parseFloat(coordinates[2])) / 2;
-              let top =
-                (parseFloat(coordinates[1]) + parseFloat(coordinates[3])) / 2;
-              condensedlist.push("&s=" + String(top) + "," + String(bottom));
-              console.log("coord is :", coordinates);
-              //adding the condensed values and the time to our search map for the view on map feature, by mapping id of found1[idx] (current image) to location
-              let time = new URLSearchParams(found1[index].image).get("TIME");
-              searchmap[found1[index].id] =
-                urlprefix + zoomlevel + "&t=" + time + condensedlist[index];
+      //api call to /search endpoint
+      axios(config)
+        .then(function (response) {
+          // console.log("API Response: ", JSON.stringify(response.data));
+          let json = response.data;
+          // console.log(json);
+          json = JSON.stringify(json);
+          json = JSON.parse(json);
+          json = json["images"];
+          json.forEach((item, idx) => {
+            //   console.log(idx + 1, ": ", item);
+            found1.push({
+              image: item.url,
+              id: "img-" + (idx + 2) + Math.random().toString(36).substr(2, 9),
+              content: item.bbox,
             });
+            // condense the coordinates of this particular image into 2 coordinates, to be able to view it on map using marker
+            //   let coordinates = found1[index].content.split(",");
+            //   let bottom =
+            //     (parseFloat(coordinates[0]) + parseFloat(coordinates[2])) / 2;
+            //   let top =
+            //     (parseFloat(coordinates[1]) + parseFloat(coordinates[3])) / 2;
+            //   condensedlist.push("&s=" + String(top) + "," + String(bottom));
+            //   console.log("coord is :", coordinates);
+            //   //adding the condensed values and the time to our search map for the view on map feature, by mapping id of found1[idx] (current image) to location
+            //   let time = new URLSearchParams(found1[index].image).get("TIME");
+            //   searchmap[found1[index].id] =
+            //     urlprefix + zoomlevel + "&t=" + time + condensedlist[index];
+            parent.setState(
+              {
+                founditems: found1,
+                loaded: true,
+                // searchmap: searchmap,
+                showview: false,
+              },
+              () => console.log("founditems: ", parent.state.founditems)
+            );
           });
-
-          console.log("distance1: ", dist1);
-          console.log("search_map: ", searchmap);
-          this.setState(
-            {
-              founditems: found1,
-              loaded: true,
-              searchmap: searchmap,
-              showview: true,
-            },
-            () => console.log("founditems: ", this.state.founditems)
-          );
+          // console.log(found1);
         })
-        .catch((err) => {
+        .catch(function (err) {
           if (err.response) {
             console.log("error response:");
             console.log(err.response);
@@ -655,134 +492,12 @@ class Foreground extends React.Component {
             console.log(err);
           }
 
-          this.refinesearch();
-        });
-    } else {
-      // multiple embeddings search here we go!
-      // let zoomlevel =
-      //   "&v=-166.02834055119263,-88.04645825821608,207.31713381220345,87.44535976936983+&t=";
-      var resolution = this.state.searchitems[0].dimension;
-      resolution = parseInt(resolution);
-      let searchmap = [];
-      // construct the body -> combine embeddings of all searchitems
-      var embeddings = "";
-      this.state.searchitems.forEach((item, index) => {
-        if (item.embeddings) {
-          console.log("Embedding: %o", index);
-          console.log(item.embeddings);
-          var embedding = item.embeddings.slice(1, -1); // [second_index,second_last_index]
-          if (embeddings != "") {
-            embeddings = embeddings + "," + embedding;
-          } else {
-            embeddings = embedding;
-          }
-        }
-      });
-
-      const config_headers = {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-
-        "Access-Control-Allow-Headers":
-          "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
-      };
-
-      const config = {
-        headers: config_headers,
-        timeout: 100000000,
-      };
-
-      var body = {
-        startdate: startdate,
-        enddate: enddate,
-        inputembeddings: embeddings.replace(/\s\s+/g, " "),
-      };
-
-      console.log("body before strinigfy:");
-      console.log(body);
-
-      body = qs.stringify(body, { indices: false });
-      console.log("body:");
-      console.log(body);
-
-      var searchurl =
-        "https://fdl-us-knowledge.ue.r.appspot.com/similarembeddings/";
-
-      axios
-        .post(
-          searchurl,
-          body,
-          {
-            params: {
-              resolutions: 512,
-              bound_box: 0,
-              model_name: 0,
-              ann_lib: 0,
-              return_items: 10,
-              products: "viirs",
-            },
-            paramsSerializer: (params) => {
-              console.log("embeddings search:");
-              console.log(params);
-              return qs.stringify(params, { indices: false });
-            },
-          },
-          config
-        )
-        .then((res) => {
-          console.log("embeddings search response");
-          console.log(res.data);
-          var found1 = [];
-          let condensedlist = [];
-          var json = res.data;
-          json = JSON.parse(res.data);
-          json = json["output_embeddings"];
-          json = json.replace(/'/g, "");
-          json = JSON.parse(json);
-          json.forEach((data, index) => {
-            found1.push({
-              image: data.worldviewurl,
-              id:
-                "img-" + (index + 2) + Math.random().toString(36).substr(2, 9),
-              content: data.BBOX,
-              embeddings: data.embedding,
-              dimension: resolution,
-            });
-            let coordinates = found1[index].content.split(",");
-            let bottom =
-              (parseFloat(coordinates[0]) + parseFloat(coordinates[2])) / 2;
-            let top =
-              (parseFloat(coordinates[1]) + parseFloat(coordinates[3])) / 2;
-            condensedlist.push("&s=" + String(top) + "," + String(bottom));
-            console.log("coord is :", coordinates);
-            //adding the condensed values and the time to our search map for the view on map feature, by mapping id of found1[idx] (current image) to location
-            let time = new URLSearchParams(found1[index].image).get("TIME");
-            searchmap[found1[index].id] =
-              urlprefix + zoomlevel + "&t=" + time + condensedlist[index];
-          });
-
-          console.log("Multi seach found: ", found1);
-          this.setState(
-            {
-              founditems: found1,
-              showview: true,
-              searchmap: searchmap,
-              loaded: true,
-            },
-            console.log(this.state.founditems)
-          );
-        })
-        .catch((err) => {
-          console.log("multiple embeddings error");
-          console.log(err);
           // this.refinesearch();
         });
-    }
+    });
   }
 
   render() {
-    // console.log("clicked item= ", this.state.clickeditem.content);
-
     return (
       <div
         id="popup-cover"
@@ -816,161 +531,142 @@ class Foreground extends React.Component {
               <MdClose />
             </div>
           </div>
-          <DragDropContext onDragEnd={this.onDragEnd}>
-            <div className="search-container">
-              <h2 style={{ width: "674px", textAlign: "left" }}>
-                <MdGrade /> Search input: <b>{this.state.searchitems.length}</b>
-              </h2>
-              <div className="droppable-search">
-                <Droppable droppableId="droppable" direction="horizontal">
-                  {(provided, snapshot) => (
-                    <div
-                      className="droppablecont"
-                      ref={provided.innerRef}
-                      style={getSearchListStyle(snapshot.isDraggingOver)}
-                    >
-                      {this.state.searchitems.map((item, index) => (
-                        <Card
-                          imgstyle="search-img"
-                          itemprop={item}
-                          clickFunction={this.cardClick}
-                          keyprop={item.id}
-                          idprop={item.id}
-                          indexprop={index}
-                          image={item.image}
-                          droppable={"droppable"}
-                          movetosearchfunction={this.moveToSearch}
-                          discardfunction={this.discard}
-                          hasmovetosearch={false}
-                          showview={false}
-                        />
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
+          <div style={{ display: "none" }}>
+            <img id="hidden-img" src={this.state.searchitems.img}></img>
+          </div>
+          <div className="search-container">
+            <h2 style={{ width: "674px", textAlign: "left" }}>
+              <MdGrade /> Search input: <b>{this.state.searchitems.length}</b>
+            </h2>
+            <div className="droppable-search">
+              <div className="droppablecont">
+                {this.state.searchitems.map((item, index) => (
+                  <Card
+                    imgstyle="search-img"
+                    itemprop={item}
+                    clickFunction={this.cardClick}
+                    keyprop={item.id}
+                    idprop={item.id}
+                    indexprop={index}
+                    image={item.image}
+                    droppable={"droppable"}
+                    movetosearchfunction={this.moveToSearch}
+                    discardfunction={this.discard}
+                    hasmovetosearch={false}
+                    showview={false}
+                  />
+                ))}
               </div>
             </div>
+          </div>
 
+          <div
+            className="refinebar"
+            id="search"
+            style={{
+              display: this.state.searchitems.length > 0 ? "block" : "none",
+            }}
+          >
             <div
-              className="refinebar"
-              id="search"
-              style={{
-                display: this.state.searchitems.length > 0 ? "block" : "none",
-              }}
+              id="refinebutton"
+              className={this.state.loaded == false ? "activebutton" : null}
+              onClick={this.startsearch}
             >
-              <div
-                id="refinebutton"
-                className={this.state.loaded == false ? "activebutton" : null}
-                onClick={this.startsearch}
-              >
-                {this.state.founditems.length > 0 ? (
-                  <MdYoutubeSearchedFor />
-                ) : (
-                  <MdSearch />
-                )}
-                &nbsp;Search
-              </div>
-            </div>
-            <div className="found-container">
               {this.state.founditems.length > 0 ? (
-                <h2
-                  style={{
-                    display: this.state.nearbyclicked ? "none" : "block",
-                    width: "674px",
-                    textAlign: "left",
-                  }}
-                >
-                  <MdImage /> Showing first {this.state.founditems.length}{" "}
-                  results
-                </h2>
+                <MdYoutubeSearchedFor />
               ) : (
-                <h2
-                  style={{
-                    display: this.state.nearbyclicked ? "none" : "block",
-                    width: "674px",
-                    textAlign: "left",
-                  }}
-                >
-                  <MdImage /> Click search!
-                </h2>
+                <MdSearch />
               )}
-              <div
-                className="droppable"
+              &nbsp;Search
+            </div>
+          </div>
+          <div className="found-container">
+            {this.state.founditems.length > 0 ? (
+              <h2
                 style={{
                   display: this.state.nearbyclicked ? "none" : "block",
+                  width: "674px",
+                  textAlign: "left",
                 }}
               >
-                <Droppable droppableId="droppable2" direction="horizontal">
-                  {(provided, snapshot) => (
-                    <div
-                      className="droppablecont"
-                      ref={provided.innerRef}
-                      style={getFoundListStyle(snapshot.isDraggingOver)}
-                    >
-                      {this.state.founditems.map((item, index) => (
-                        <Card
-                          imgstyle="output-img"
-                          itemprop={item}
-                          clickFunction={this.cardClick}
-                          keyprop={item.id}
-                          idprop={item.id}
-                          indexprop={index}
-                          image={item.image}
-                          droppable={"droppable2"}
-                          movetosearchfunction={this.moveToSearch}
-                          discardfunction={this.discard}
-                          hasmovetosearch={true}
-                          showview={this.state.showview}
-                          // searchlocation={item.searchlocation}
-                          searchlocation={
-                            this.state.showview
-                              ? "https://worldview.earthdata.nasa.gov/" +
-                                this.state.searchmap[item.id]
-                              : null
-                          }
-                        />
-                      ))}
+                <MdImage /> Showing first {this.state.founditems.length} results
+              </h2>
+            ) : (
+              <h2
+                style={{
+                  display: this.state.nearbyclicked ? "none" : "block",
+                  width: "674px",
+                  textAlign: "left",
+                }}
+              >
+                <MdImage /> Click search!
+              </h2>
+            )}
+            <div
+              className="droppable"
+              style={{
+                display: this.state.nearbyclicked ? "none" : "block",
+              }}
+            >
+              <div className="droppablecont">
+                {this.state.founditems.map((item, index) => (
+                  <Card
+                    imgstyle="output-img"
+                    itemprop={item}
+                    clickFunction={this.cardClick}
+                    keyprop={item.id}
+                    idprop={item.id}
+                    indexprop={index}
+                    image={item.image}
+                    droppable={"droppable2"}
+                    movetosearchfunction={this.moveToSearch}
+                    discardfunction={this.discard}
+                    hasmovetosearch={true}
+                    showview={this.state.showview}
+                    // searchlocation={item.searchlocation}
+                    searchlocation={
+                      this.state.showview
+                        ? "https://worldview.earthdata.nasa.gov/" +
+                          this.state.searchmap[item.id]
+                        : null
+                    }
+                  />
+                ))}
+                {this.state.founditems.length < 1 && this.state.loaded ? (
+                  <div className="loader">
+                    <p>
+                      Press the search button above to
+                      <br /> perform a similarity search. <br />
+                      <br /> The results will show up here.
+                    </p>
+                  </div>
+                ) : null}
 
-                      {provided.placeholder}
-                      {this.state.founditems.length < 1 && this.state.loaded ? (
-                        <div className="loader">
-                          <p>
-                            Press the search button above to
-                            <br /> perform a similarity search. <br />
-                            <br /> The results will show up here.
-                          </p>
-                        </div>
-                      ) : null}
-
-                      {this.state.loaded ? null : (
-                        <div className="loader2">
-                          <Ring color="white" />
-                          <p>
-                            Searching... Using {this.state.searchitems.length}{" "}
-                            image(s).
-                          </p>
-                          <br />
-                          <br />
-                          <p>
-                            <TextLoop
-                              children={[
-                                "Creating embeddings...",
-                                "Indexing the planet...",
-                                "Configuring models...",
-                                "Optimizing search area...",
-                                "Searching for similarities...",
-                              ]}
-                            />
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </Droppable>
+                {this.state.loaded ? null : (
+                  <div className="loader2">
+                    <Ring color="white" />
+                    <p>
+                      Searching... Using {this.state.searchitems.length}{" "}
+                      image(s).
+                    </p>
+                    <br />
+                    <br />
+                    <p>
+                      <TextLoop
+                        children={[
+                          "Creating embeddings...",
+                          "Indexing the planet...",
+                          "Configuring models...",
+                          "Optimizing search area...",
+                          "Searching for similarities...",
+                        ]}
+                      />
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-          </DragDropContext>
+          </div>
         </div>
 
         <SkyLight
