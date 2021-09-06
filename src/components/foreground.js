@@ -11,21 +11,13 @@ import {
   MdGrade,
   MdYoutubeSearchedFor,
 } from "react-icons/md";
-import { IoEarth, IoThumbsUpSharp } from "react-icons/io5";
+import { IoEarth } from "react-icons/io5";
 
 import { Ring } from "react-spinners-css";
 
 import TextLoop from "react-text-loop";
-import DateRangePicker from "@wojtekmaj/react-daterange-picker";
+
 axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
-
-// a little function to help us with reordering the result
-const reorder = (list, startIndex, endIndex) => {
-  const result = Array.from(list);
-  const [removed] = result.splice(startIndex, 1);
-
-  return result;
-};
 
 const dialogStyle = {
   display: "flex",
@@ -35,38 +27,6 @@ const dialogStyle = {
   position: "fixed",
   top: "30%",
   left: "50%",
-};
-
-function closest(needle, haystack) {
-  // returns which of [1024,2048,4096] the i/p resoultion is closest to, threshold = 512
-  return haystack.reduce((a, b) => {
-    let aDiff = Math.abs(a - needle);
-    let bDiff = Math.abs(b - needle);
-
-    if (aDiff == bDiff) {
-      return a > b ? a : b;
-    } else {
-      return bDiff < aDiff ? b : a;
-    }
-  });
-}
-
-/**
- * Moves an item from one list to another list.
- */
-const move = (source, destination, droppableSource, droppableDestination) => {
-  console.log("Move invoked!");
-  const sourceClone = Array.from(source);
-  const destClone = Array.from(destination);
-  const [removed] = sourceClone.splice(droppableSource.index, 1);
-
-  destClone.splice(droppableDestination.index, 0, removed);
-
-  const result = {};
-  result[droppableSource.droppableId] = sourceClone;
-  result[droppableDestination.droppableId] = destClone;
-
-  return result;
 };
 
 function getMonthFromString(mon) {
@@ -89,22 +49,15 @@ class Foreground extends React.Component {
       launch: true,
       searchitems: [],
       founditems: [],
-      // nearbyitems: [],
-      rejectitems: [],
       clickeditem: [],
       found1: [],
-      found2: [],
-      found3: [],
       searchmap: {},
       screenshot: "",
-      // nearbyclicked: false,
       firstrun: false,
       loaded: false,
       viewdate: false,
       showview: false,
-      daterange: [new Date(2020, 7, 24), new Date(2020, 7, 24)],
       searchurl: "https://fdl-us-knowledge.ue.r.appspot.com/similarimages/",
-      encodedImg: "",
     };
 
     this.cardClick = this.cardClick.bind(this);
@@ -188,17 +141,6 @@ class Foreground extends React.Component {
 
     var full = bottom + "," + top;
 
-    //full contains a csv of bottom coordinates followed by top coordinates
-    //storing the float version to state to compare coordinates with found items
-    var newfull = full.split(",");
-    newfull = newfull.map((item) => {
-      return parseFloat(item);
-    });
-    console.log("new full: ", newfull);
-    this.setState({
-      baseCoordinates: newfull,
-    });
-
     var year = document.getElementById("year-timeline").value;
 
     var month = document.getElementById("month-timeline").value;
@@ -213,42 +155,9 @@ class Foreground extends React.Component {
 
     month = minTwoDigits(month);
 
-    var dimensions = document.getElementById("wv-image-dimensions").textContent;
-
-    var dimsplit = dimensions.split("x");
-
-    // x and y are the resolutions of the image in the search set, we get the max of these two and pass it to the closest function
-
-    var x = dimsplit[0];
-
-    var y = dimsplit[1];
-
-    x = x.replace(/\D/g, "");
-
-    y = y.replace(/\D/g, "");
-
-    var largestdimension = Math.max(x, y);
-
-    var allowedresolutions = [512, 1024, 2048];
-
-    //the closest function returns which value our input is closest to, threshold = 512,
-    //example:  i/p: 1024 + (<=511) , o/p = 1024, i/p: 1024 + (>=512) , o/p = 2048, and similar for 2048 and 4096
-
-    var closestdimension = closest(largestdimension, allowedresolutions);
-
-    console.log("x: " + x + "y: " + y + "largest: " + largestdimension);
-    console.log("dimension set as: ", closestdimension);
-    var trainingsetting = "RANDOM";
-
-    if (closestdimension == 4096) {
-      trainingsetting = "NONE";
-    }
-
     var searchdata = [
       {
         id: "item-1",
-        dimension: closestdimension,
-        training: trainingsetting,
         year: year,
         month: month,
         day: day,
