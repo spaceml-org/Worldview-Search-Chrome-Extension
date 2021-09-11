@@ -12,20 +12,17 @@
 
 # Worldviewsearch Chrome Extension
 
-<ins> **What is it?** </ins>
+Well lets say you're trying to index images of the earth, and you want to find **similar images** to your input. That's exactly what this is for - a chrome extension built on React, that lets you take a snapshot of satellite images from NASA's worldview website, and lets you perform similarity searches on the same, which is returned back to you, in a neat and clean UI
 
-Well lets say you're trying to index images of the earth, and you want to find **similar images** to your input. That's exactly what this is for - a chrome extension built on React, that lets you take a snapshot of satelite images from NASA's worldview website, and lets you perform similarity searches on the same, which is returned back to you, in a neat and clean UI
-
-### Install Worldviewsearch Chrome Extension
-- To get started you will need npm installed on your system
+## Install Worldviewsearch Chrome Extension
 - Clone the main branch of the repository
 - Extract all the files to a folder of your choice.
-- Go to [chrome://extensions](chrome://extensions) in your chrome browser
+- Go to [chrome://extensions](chrome://extensions/) in your chrome browser
 - Activate **"developer mode"** in right-hand corner
-- Click **"load unpacked"** button on left side
+- Click the **"load unpacked"** button on the left side
 - Point to the *dist* folder within the unzipped folder 
 
-### How To Use Worldviewsearch Chrome Extension
+## How To Use Worldviewsearch Chrome Extension
 Step 1) **Head over to [WorldView website](https://worldview.earthdata.nasa.gov/)** \
 In the layers option choose *Corrected Reflectance(True Colour)* and unselect the default selections\
 Move a day behind to begin using it
@@ -34,6 +31,7 @@ Step 2) **Press the camera button on the worldview website** \
    Take a snapshot of the required region and then press the glowing *Worldview Similarity Search* button and you're good to go!
 
 ## Development:
+- Requires npm/node, and react 
 - Most of the code lives in `components/foreground.js`.
 - Bring up the terminal on the unzipped folder and run 
    `npm install`  to get started
