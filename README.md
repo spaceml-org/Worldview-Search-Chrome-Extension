@@ -1,5 +1,5 @@
 <div align = "center">
-<img src="https://github.com/spaceml-org/Worldviewsearch-Chrome-Extension/blob/sumanth/src/images/banner.png" >
+<img src="https://github.com/spaceml-org/Worldviewsearch-Chrome-Extension/blob/sumanth/src/images/banner.jpg" >
 
 <p align="center">
   Published by <a href="http://spaceml.org/">SpaceML</a> •
