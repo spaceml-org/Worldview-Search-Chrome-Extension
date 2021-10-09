@@ -6,7 +6,7 @@
   <a href="https://arxiv.org/abs/2012.10610">About SpaceML</a> •
 </p>
 
-![npm](./src/images/npm.svg) ![javascript](https://img.shields.io/badge/%20%20JavaScript-%20%20%20%20730L-f1e05a.svg) ![html](https://img.shields.io/badge/%20%20HTML-%20%20%20%20164L-e34c26.svg) \
+![npm](https://github.com/spaceml-org/Worldview-Search-Chrome-Extension/blob/new-api-version/src/images/npm.svg) ![javascript](https://img.shields.io/badge/%20%20JavaScript-%20%20%20%20730L-f1e05a.svg) ![html](https://img.shields.io/badge/%20%20HTML-%20%20%20%20164L-e34c26.svg) \
 *****Coming soon to the Chrome Web Store*****
 </div>
 
